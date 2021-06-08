@@ -2,7 +2,7 @@
 > The minimalistic email relay for contact forms and more!
 
 This is basically a minimal self-hosted open source alternative to [Formspree](https://formspree.io/) and [SendGrid](https://sendgrid.com/).  
-Unlike other mail services (that often gives you an API key), this self-hosted mail service is designed to be accessed directly from a frontend.
+Unlike other mail services (that often gives you an API key for backends), this self-hosted mail service is designed to be accessed directly from a frontend.
 
 ### Features
 - Access via API or HTML form + redirect
@@ -29,6 +29,7 @@ cd mailform
 docker build -t Feuerhamster/mailform .
 docker run Feuerhamster/mailform
   -e PORT=3000
+  -e PROXY=true
   -v /your/custom/path /app/targets
 ```
 
@@ -45,8 +46,12 @@ npm run start
 
 ## ⚙️Configuration
 ### Application
-To configure the port, simply set the environment variable `PORT` to the port you want to have.
-If you want to have your targets in a different directory, you can change that in the `TARGETS_DIR` environment variable.
+MailForm can be configured using environment variables.
+
+**Environment variables:**
+- `PORT` The port on which the application starts. If not provided, a random port will be selected.
+- `TARGETS_DIR` Path to the directory with your target files. Default is `/targets` of the project root.
+- `PROXY` A boolean that enables the "trust proxy" option of Express. **Enable this if you're using MailForm behind a reverse proxy like NGINX!** Default value is false.
 
 ### Targets
 Targets are your different endpoints each with its own rate limits and smtp provider.

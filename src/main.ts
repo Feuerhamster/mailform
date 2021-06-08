@@ -6,7 +6,12 @@ import routes from "./router";
 
 // Start express app
 const port = process.env.PORT || 0;
+const trustProxy: boolean = (process.env.PROXY === "true");
+
 const app: Application = express();
+
+app.set("trust proxy", trustProxy);
+app.set("x-powered-by", false);
 
 // Middlewares
 app.use(express.json());

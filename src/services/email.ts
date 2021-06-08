@@ -7,7 +7,7 @@ export class EmailService {
     private static targetTransports: Map<string, Transporter> = new Map<string, Transporter>();
 
     /**
-     * Register a mail target in the email service
+     * Register a target in the email service
      * @param targetName (file-)name of an existing and loaded target
      * @param smtpURL A valid SMTP(S) URL
      */
