@@ -23,6 +23,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
     // CORS
     res.setHeader("Access-Control-Allow-Origin", target.origin);
     res.setHeader("Access-Control-Allow-Method", "POST");
+    res.setHeader("Access-Control-Allow-Headers", "*");
 
     // Check origin
     if(target.origin !== req.header("origin")) {
@@ -36,6 +37,10 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
         if(!bearer || bearer[1] !== target.key) {
             return res.status(401).end();
         }
+    }
+
+    if(req.method === "OPTIONS") {
+        return res.status(200).end();
     }
 
     return next();
