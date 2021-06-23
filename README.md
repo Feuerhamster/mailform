@@ -13,6 +13,7 @@ Unlike other mail services (that often gives you an API key for backends), this 
 ### Planned features
 - [ ] Email Templates
 - [ ] File Uploads for attachments
+- [ ] ReCaptcha support
 
 ### Used frameworks & libraries
 - [Express](https://expressjs.com/)
