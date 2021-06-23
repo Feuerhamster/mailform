@@ -2,6 +2,8 @@ import nodemailer, {Transporter} from "nodemailer";
 import {TargetManager} from "./targetManager";
 import {Target} from "../@types/target";
 
+let enableDebugLog = process.env["DEBUG_LOG"] || false;
+
 export class EmailService {
 
     private static targetTransports: Map<string, Transporter> = new Map<string, Transporter>();
@@ -57,14 +59,16 @@ export class EmailService {
         let transporter: Transporter = this.targetTransports.get(targetName);
 
         try {
-            await transporter.sendMail({
+            let res = await transporter.sendMail({
                 from,
                 replyTo: from,
                 to: target.recipients,
                 subject,
                 html: body
             });
+            if(enableDebugLog) console.log(res);
         } catch (e) {
+            if(enableDebugLog) console.error(e);
             return e;
         }
 
