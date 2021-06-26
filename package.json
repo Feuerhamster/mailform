@@ -1,7 +1,7 @@
 {
     "name": "mailform",
     "private": true,
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "The minimalistic email relay for contact forms and more!",
     "main": "dist/main.js",
     "scripts": {
@@ -12,6 +12,7 @@
     "author": "Feuerhamster",
     "license": "Apache-2.0",
     "dependencies": {
+        "axios": "^0.21.1",
         "express": "^4.17.1",
         "nodemailer": "^6.6.0",
         "rate-limiter-flexible": "^2.2.2",

@@ -1,19 +1,21 @@
 # 📨 MailForm
-> The minimalistic email relay for contact forms and more!
+> The lightweight email relay for contact forms and more!
 
-This is basically a minimal self-hosted open source alternative to [Formspree](https://formspree.io/) and [SendGrid](https://sendgrid.com/).  
-Unlike other mail services (that often gives you an API key for backends), this self-hosted mail service is designed to be accessed directly from a frontend.
+This is basically a minimal self-hosted open source alternative to [Formspree](https://formspree.io/) and [SendGrid](https://sendgrid.com/).
+
+Unlike other mail services (that often gives you an API key for backends), this self-hosted mail service is designed to be accessed directly from a frontend, but also offers you the option to use it as a mail service with configurable API keys.
 
 ### Features
-- Access via API or HTML form + redirect
-- CORS and Origin restriction
+- Access via API or HTML form with redirects
+- Configurable CORS and Origin restriction
+- ReCaptcha and hCaptcha support
 - Custom rate limits for every target
 - Optional API keys
 
 ### Planned features
 - [ ] Email Templates
 - [ ] File Uploads for attachments
-- [ ] ReCaptcha support
+- [x] ReCaptcha and hCaptcha support
 
 ### Used frameworks & libraries
 - [Express](https://expressjs.com/)
@@ -21,6 +23,7 @@ Unlike other mail services (that often gives you an API key for backends), this 
 - [Nodemailer](https://nodemailer.com/about/)
 - [Validate.js](https://validatejs.org/)
 - [rate-limiter-flexible](https://www.npmjs.com/package/rate-limiter-flexible)
+- [axios](https://github.com/axios/axios)
 
 ## 💽 Installation
 ### Docker
@@ -67,6 +70,10 @@ They are JSON files placed in the `/targets` directory.
     "rateLimit": {
         "timespan": 300,
         "requests": 1
+    },
+    "captcha": {
+        "provider": "hcaptcha",
+        "secret": "xxx"
     }
 }
 ```
@@ -83,6 +90,9 @@ They are JSON files placed in the `/targets` directory.
 - `rateLimit` *required*:
     - `timespan` *required* | Timespan (in seconds) for the rate limiter to reset.
     - `requests` *required* | Allowed amount of requests in the given timespan.
+- `captcha` *optional*:
+  - `provider` *required if captcha* | The captcha provider ("recaptcha" or "hcaptcha").
+  - `secret` *required if captcha* | Secret key for your captcha.
 
 For the exact validations of the fields please see here: [target.ts](/src/models/target.ts)
 
@@ -95,11 +105,23 @@ Whether as formular data or json, the fields are the same.
 - `lastName` *optional* | A classic last name filed which will be attached to the "from" field of the email.
 - `subject` *required* | The email subject.
 - `body` *required* | The email body (supports HTML).
+  
+- `g-recaptcha-response` *only required if target use captcha* | Field for ReCaptcha response.
+- `h-captcha-response` *only required if target use captcha* | Field for hCaptcha response.
 
 For the exact validations of the fields please see here: [posts.ts](/src/models/post.ts)
 
 **Important info:** If a redirect is configured for your target, it will always return the redirect, even if you make an API call.
 If no redirect is set, http status codes will be returned.
+
+### Captchas
+MailForm supports both [ReCaptcha](https://www.google.com/recaptcha/) and [hCaptcha](https://www.hcaptcha.com/).
+
+To use captchas, you have to configure it in your target.
+
+On a request, the corresponding field (`g-recaptcha-response` for ReCaptcha or `h-captcha-response` for hCaptcha) have to be filled for validation.
+If you use the captcha widget in a form, this will happen automatically.
+If you use an API request, you have to fill it manually.
 
 ### HTML Form
 
@@ -110,6 +132,7 @@ If no redirect is set, http status codes will be returned.
     <input type="text" name="firstName" placeholder="First name" />
     <input type="text" name="lastName" placeholder="Last name" />
     <input type="text" name="subject" placeholder="Subject" />
+    <div class="g-recaptcha" data-sitekey="your_site_key"></div>
     <textarea name="body" placeholder="Your message"></textarea>
 </form>
 ```
@@ -134,6 +157,13 @@ Authorization: Bearer your-optional-api-key
   "body": "your message",
 }
 ```
+
+**Possible status codes:**
+- `200` Email was successfully sent.
+- `401` Authentication failed: API key not present or wrong.
+- `403` Forbidden because of wrong origin header.
+- `404` Target not found.
+- `500` Sending the email failed.
 
 ## 👋 Contribution
 Feel free to create issues and pull requests if you want!

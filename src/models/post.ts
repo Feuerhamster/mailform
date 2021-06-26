@@ -35,5 +35,13 @@ export const postBody = {
             minimum: 5,
             maximum: 32000
         }
+    },
+    "g-recaptcha-response": {
+        type: "string",
+        presence: false
+    },
+    "h-captcha-response": {
+        type: "string",
+        presence: false
     }
 }

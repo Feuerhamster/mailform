@@ -4,8 +4,9 @@ export interface Target {
     recipients: string[];
     from?: string;
     redirect?: Redirects;
-    key?: string
-    rateLimit?: TargetRateLimit
+    key?: string;
+    rateLimit?: TargetRateLimit;
+    captcha?: TargetCaptchaOptions
 }
 
 export interface Redirects {
@@ -16,4 +17,14 @@ export interface Redirects {
 export interface TargetRateLimit {
     timespan: number;
     requests: number;
+}
+
+export interface TargetCaptchaOptions {
+    provider: CaptchaProvider;
+    secret: string;
+}
+
+export enum CaptchaProvider {
+    RECAPTCHA = "recaptcha",
+    HCAPTCHA = "hcaptcha"
 }

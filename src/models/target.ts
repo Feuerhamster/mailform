@@ -26,12 +26,18 @@ export const targetModel = {
     "redirect.success": {
         type: "string",
         presence: false,
-        url: true
+        url: {
+            schemes: ["http", "https"],
+            allowLocal: true
+        }
     },
     "redirect.error": {
         type: "string",
         presence: false,
-        url: true
+        url: {
+            schemes: ["http", "https"],
+            allowLocal: true
+        }
     },
     key: {
         type: "string",
@@ -48,5 +54,13 @@ export const targetModel = {
     "rateLimit.requests": {
         type: "number",
         presence: true
+    },
+    captcha: {
+        type: "object",
+        presence: false
+    },
+    "captcha.provider": {
+        type: "string",
+        inclusion: ["recaptcha", "hcaptcha"]
     }
 }
