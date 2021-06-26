@@ -1,5 +1,5 @@
 # 📨 MailForm
-> The lightweight email relay for contact forms and more!
+> The lightweight email service for contact forms and more!
 
 This is basically a minimal self-hosted open source alternative to [Formspree](https://formspree.io/) and [SendGrid](https://sendgrid.com/).
 
