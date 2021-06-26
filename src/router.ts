@@ -21,12 +21,12 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
     let target: Target = TargetManager.targets.get(req.params.target);
 
     // CORS
-    res.setHeader("Access-Control-Allow-Origin", target.origin);
+    res.setHeader("Access-Control-Allow-Origin", target.origin ? target.origin : "*");
     res.setHeader("Access-Control-Allow-Method", "POST");
     res.setHeader("Access-Control-Allow-Headers", "*");
 
     // Check origin
-    if(target.origin !== req.header("origin")) {
+    if(target.origin && target.origin !== req.header("origin")) {
         return res.status(403).end();
     }
 

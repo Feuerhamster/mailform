@@ -9,7 +9,7 @@ export const targetModel = {
     },
     origin: {
         type: "string",
-        presence: { allowEmpty: false }
+        presence: false
     },
     recipients: {
         type: "array",

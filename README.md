@@ -73,7 +73,7 @@ They are JSON files placed in the `/targets` directory.
 
 **Available fields:**
 - `smtp` *required* | A valid SMTP(S) url.
-- `origin` *required* | A HTTP origin that is used for CORS and to restrict access.
+- `origin` *optional* | A HTTP origin that is used for CORS and to restrict access. Default is * if not set.
 - `recipients` *required* | An array of email addresses which should receive the email.
 - `from` *optional* | The "from" field of an email. This is used as fallback if no "from" is provided in the request.
 - `key` *optional* | A string used as API key if you want to restrict access to this target.

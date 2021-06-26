@@ -2,8 +2,6 @@ import nodemailer, {Transporter} from "nodemailer";
 import {TargetManager} from "./targetManager";
 import {Target} from "../@types/target";
 
-let enableDebugLog = process.env["DEBUG_LOG"] || false;
-
 export class EmailService {
 
     private static targetTransports: Map<string, Transporter> = new Map<string, Transporter>();
@@ -59,18 +57,23 @@ export class EmailService {
         let transporter: Transporter = this.targetTransports.get(targetName);
 
         try {
-            let res = await transporter.sendMail({
+            await transporter.sendMail({
                 from,
                 replyTo: from,
                 to: target.recipients,
                 subject,
                 html: body
             });
-            if(enableDebugLog) console.log(res);
         } catch (e) {
-            if(enableDebugLog) console.error(e);
+            console.error("[!] An error occurred while sending an email");
+            console.error("* target: " + targetName);
+            console.error("* " + e.message);
             return e;
         }
+
+        console.log(`Email successful sent`);
+        console.log("* target: " + targetName);
+        console.log("* time: " + new Date().toString());
 
         return true;
 
