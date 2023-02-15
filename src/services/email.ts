@@ -1,4 +1,6 @@
+import {File as FormidableFile, Files as FormidableFiles} from "formidable";
 import nodemailer, {Transporter} from "nodemailer";
+import {Attachment as NodemailerAttachment} from "nodemailer/lib/mailer";
 import {TargetManager} from "./targetManager";
 import {Target} from "../@types/target";
 
@@ -13,6 +15,38 @@ export class EmailService {
      */
     public static registerTarget(targetName: string, smtpURL: string): void {
         this.targetTransports.set(targetName, nodemailer.createTransport(smtpURL));
+    }
+
+    /**
+     * Map file objects from formidable to attachment objects for nodemailer
+     * @param files Formidable files
+     * @return NodemailerAttachment[]
+     */
+    private static mapFormidableFilesToNodemailerAttachments(files: FormidableFiles): NodemailerAttachment[] {
+        const attachments: NodemailerAttachment[] = [];
+
+        for (const fileKey in files) {
+            const fileValue = files[fileKey];
+            const fileValues: FormidableFile[] = fileValue instanceof Array ? fileValue : [fileValue]
+
+            for (const singleFileValue of fileValues) {
+                attachments.push(this.mapFormidableFileToNodemailerAttachment(singleFileValue));
+            }
+        }
+        return attachments;
+    }
+
+    /**
+     * Map file object from formidable to attachment object for nodemailer
+     * @param file Formidable file
+     * @return NodemailerAttachment
+     */
+    private static mapFormidableFileToNodemailerAttachment(file: FormidableFile): NodemailerAttachment {
+        return {
+            path: file.filepath,
+            filename: file.originalFilename,
+            contentType: file.mimetype,
+        };
     }
 
     /**
@@ -46,9 +80,10 @@ export class EmailService {
      * @param from Email from field
      * @param subject Email subject field
      * @param body Email body
+     * @param files Formidable files
      * @return Promise<boolean|Error> True if success, error object if not success
      */
-    public static async sendMail(targetName: string, from: string, subject: string, body: string): Promise<boolean|Error> {
+    public static async sendMail(targetName: string, from: string, subject: string, body: string, files: FormidableFiles): Promise<boolean|Error> {
 
         if(!this.targetTransports.has(targetName)) return false;
 
@@ -62,7 +97,8 @@ export class EmailService {
                 replyTo: from,
                 to: target.recipients,
                 subject,
-                html: body
+                html: body,
+                attachments: this.mapFormidableFilesToNodemailerAttachments(files),
             });
         } catch (e) {
             console.error("[!] An error occurred while sending an email");

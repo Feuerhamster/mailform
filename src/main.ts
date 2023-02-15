@@ -15,7 +15,6 @@ app.set("x-powered-by", false);
 
 // Middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Load targets
 TargetManager.load();

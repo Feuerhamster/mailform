@@ -1,27 +1,23 @@
-import validate from "validate.js";
-import {NextFunction, Request, Response} from "express";
+import {validate as validateJS} from "validate.js";
 
-// Middleware to validate custom fields in Request body
-function _validationMiddleware(req: Request, res: Response, next: NextFunction, schema: Object) {
+/**
+ * Validate custom attributes from request body
+ * @param fields Object passed as attributes to validate.js
+ * @param schema Object passed as constraints to validate.js
+ * @return Object
+ */
+function validate(fields: any, schema: Object) {
+    let errors: any[] | undefined = validateJS(fields, schema, { format: "detailed" });
 
-    let errors: any[] | undefined = validate(req.body, schema, { format: "detailed" });
-
-    // Go next if there is no errors
     if( errors === undefined ){
-        return next();
+        return { error: undefined, problems: undefined };
     }
 
     errors = errors.map((err) => {
         return { field: err.attribute, violated: err.validator, expect: err.options };
     });
 
-    return res.status(422).json({ error: "validation_error", problems: errors });
-
+    return { error: "validation_error", problems: errors };
 }
 
-
-export function validateMiddleware(schema: Object): any {
-    return (req, res, next) => _validationMiddleware(req, res, next, schema);
-}
-
-export default validateMiddleware;
+export default validate;
