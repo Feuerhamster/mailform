@@ -14,7 +14,7 @@ Unlike other mail services (that often gives you an API key for backends), this 
 
 ### Planned features
 - [ ] Email Templates
-- [ ] File Uploads for attachments
+- [x] File Uploads for attachments
 - [x] ReCaptcha and hCaptcha support
 
 ### Used frameworks & libraries
