@@ -17,7 +17,7 @@ export const targetModel = {
     },
     from: {
         type: "string",
-        presence: false
+        presence: true
     },
     redirect: {
         type: "object",

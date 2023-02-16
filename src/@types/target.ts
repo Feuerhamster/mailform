@@ -2,7 +2,7 @@ export interface Target {
     smtp: string;
     origin: string;
     recipients: string[];
-    from?: string;
+    from: string;
     redirect?: Redirects;
     key?: string;
     rateLimit?: TargetRateLimit;

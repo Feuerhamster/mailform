@@ -65,7 +65,7 @@ router.post("/:target", async (req: Request, res: Response) => {
     form.parse(req, async (err, fields, files) => {
         if (err) {
             if(target.redirect?.error) return res.redirect(target.redirect.error);
-            return res.status(500).send({ message: "Parse Error" }).end();
+            return res.status(400).send({ message: "Parse Error" }).end();
         } else {
             const validationResult = validate(fields, postBody);
 
@@ -94,8 +94,8 @@ router.post("/:target", async (req: Request, res: Response) => {
             const fieldBody = fields["body"] instanceof Array ? fields["body"][0] : fields["body"]
 
             // send email
-            let from = EmailService.formatFromField(fieldFrom ?? target.from, fieldFirstName, fieldLastName);
-            let sent = await EmailService.sendMail(req.params.target, from, fieldSubject, fieldBody, files);
+            let replyTo = EmailService.formatFromField(fieldFrom, fieldFirstName, fieldLastName);
+            let sent = await EmailService.sendMail(req.params.target, target.from, replyTo, fieldSubject, fieldBody, files);
 
             if(sent instanceof Error || !sent) {
                 if(target.redirect?.error) return res.redirect(target.redirect.error);
