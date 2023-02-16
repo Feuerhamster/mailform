@@ -65,7 +65,7 @@ router.post("/:target", async (req: Request, res: Response) => {
     form.parse(req, async (err, fields, files) => {
         if (err) {
             if(target.redirect?.error) return res.redirect(target.redirect.error);
-            return res.status(500).send({ message: "Parse Error" }).end();
+            return res.status(400).send({ message: "Parse Error" }).end();
         } else {
             const validationResult = validate(fields, postBody);
 

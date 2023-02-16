@@ -160,9 +160,11 @@ Authorization: Bearer your-optional-api-key
 
 **Possible status codes:**
 - `200` Email was successfully sent.
+- `400` Parsing the request body failed.
 - `401` Authentication failed: API key not present or wrong.
 - `403` Forbidden because of wrong origin header.
 - `404` Target not found.
+- `422` Validation errors.
 - `500` Sending the email failed.
 
 ## 👋 Contribution
