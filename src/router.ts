@@ -1,4 +1,5 @@
 import {NextFunction, Request, Response, Router} from "express";
+import formidable from "formidable";
 import {TargetManager} from "./services/targetManager";
 import {Target} from "./@types/target";
 import {RateLimiter} from "./services/rateLimiter";
@@ -50,7 +51,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
 
 });
 
-router.post("/:target", validate(postBody), async (req: Request, res: Response) => {
+router.post("/:target", async (req: Request, res: Response) => {
 
     // Check rate limit
     if(!await RateLimiter.consume(req.params.target, req.ip)) {
@@ -59,32 +60,55 @@ router.post("/:target", validate(postBody), async (req: Request, res: Response) 
 
     let target: Target = TargetManager.targets.get(req.params.target);
 
-    // Check captcha
-    if(target.captcha) {
-        let userCaptchaResponse = req.body["g-recaptcha-response"] || req.body["h-captcha-response"] || null;
-        let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
-
-        if(!verified) {
+    // parse form
+    const form = formidable({});
+    form.parse(req, async (err, fields, files) => {
+        if (err) {
             if(target.redirect?.error) return res.redirect(target.redirect.error);
-            return res.status(400).send({ message: "captcha verification failed" }).end();
+            return res.status(500).send({ message: "Parse Error" }).end();
+        } else {
+            const validationResult = validate(fields, postBody);
+
+            // validate fields
+            if(validationResult.error) {
+                return res.status(422).json(validationResult);
+            }
+
+            // Check captcha
+            if(target.captcha) {
+                let userCaptchaResponse = fields["g-recaptcha-response"] || fields["h-captcha-response"] || null;
+                userCaptchaResponse = userCaptchaResponse instanceof Array ? userCaptchaResponse[0] : userCaptchaResponse
+                let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
+
+                if(!verified) {
+                    if(target.redirect?.error) return res.redirect(target.redirect.error);
+                    return res.status(400).send({ message: "captcha verification failed" }).end();
+                }
+            }
+
+            // extract fields
+            const fieldFrom = fields["from"] instanceof Array ? fields["from"][0] : fields["from"]
+            const fieldFirstName = fields["firstName"] instanceof Array ? fields["firstName"][0] : fields["firstName"]
+            const fieldLastName = fields["lastName"] instanceof Array ? fields["lastName"][0] : fields["lastName"]
+            const fieldSubject = fields["subject"] instanceof Array ? fields["subject"][0] : fields["subject"]
+            const fieldBody = fields["body"] instanceof Array ? fields["body"][0] : fields["body"]
+
+            // send email
+            let from = EmailService.formatFromField(fieldFrom ?? target.from, fieldFirstName, fieldLastName);
+            let sent = await EmailService.sendMail(req.params.target, from, fieldSubject, fieldBody, files);
+
+            if(sent instanceof Error || !sent) {
+                if(target.redirect?.error) return res.redirect(target.redirect.error);
+                return res.status(500).send({ message: (<Error>sent).message }).end();
+            }
+
+            if(target.redirect?.success) {
+                return res.redirect(target.redirect.success);
+            }
+
+            return res.status(200).end();
         }
-    }
-
-    // send email
-    let from = EmailService.formatFromField(req.body.from ?? target.from, req.body.firstName, req.body.lastName);
-    let sent = await EmailService.sendMail(req.params.target, from, req.body.subject, req.body.body);
-
-    if(sent instanceof Error || !sent) {
-        if(target.redirect?.error) return res.redirect(target.redirect.error);
-        return res.status(500).send({ message: (<Error>sent).message }).end();
-    }
-
-    if(target.redirect?.success) {
-        return res.redirect(target.redirect.success);
-    }
-
-    res.status(200).end();
-
+    });
 });
 
 router.all("*", (req: Request, res: Response) => res.status(404).end());
