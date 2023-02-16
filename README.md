@@ -64,9 +64,10 @@ They are JSON files placed in the `/targets` directory.
 **Example target:**
 ```json
 {
-    "smtp": "smtps://username:password@smtp.example.com",
+    "smtp": "smtps://sender:password@smtp.example.com",
     "origin": "my-website.com",
-    "recipients": ["example@example.com"],
+    "from": "sender@example.com",
+    "recipients": ["recipient@example.com"],
     "rateLimit": {
         "timespan": 300,
         "requests": 1
@@ -82,7 +83,7 @@ They are JSON files placed in the `/targets` directory.
 - `smtp` *required* | A valid SMTP(S) url.
 - `origin` *optional* | A HTTP origin that is used for CORS and to restrict access. Default is * if not set.
 - `recipients` *required* | An array of email addresses which should receive the email.
-- `from` *optional* | The "from" field of an email. This is used as fallback if no "from" is provided in the request.
+- `from` *required* | The "from" field of an email.
 - `key` *optional* | A string used as API key if you want to restrict access to this target.
 - `redirect` *optional*:
   - `success` *optional*: A valid URL to redirect the user if the mail was sent successful.
@@ -100,7 +101,8 @@ For the exact validations of the fields please see here: [target.ts](/src/models
 ### Fields
 Whether as formular data or json, the fields are the same.
 
-- `from` *optional* | The email address of the sender. If this filed is not set, the "from" field of your target will be used.
+- `from` *optional* | The email address of the sender. This field is used as reply-to field of the email.
+  This field is NOT used as from field of the email to prevent email spoofing. See SPF (Sender Policy Framework) for further information.
 - `firstName` *optional* | A classic first name filed which will be attached to the "from" field of the email.
 - `lastName` *optional* | A classic last name filed which will be attached to the "from" field of the email.
 - `subject` *required* | The email subject.
@@ -152,7 +154,7 @@ Content-Type: application/json
 Authorization: Bearer your-optional-api-key
 
 {
-  "from": "example@example.com",
+  "from": "user@example.com",
   "subject": "your subect",
   "body": "your message",
 }
