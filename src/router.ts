@@ -67,6 +67,20 @@ router.post("/:target", async (req: Request, res: Response) => {
             if(target.redirect?.error) return res.redirect(target.redirect.error);
             return res.status(500).send({ message: "Parse Error" }).end();
         } else {
+
+            // sendEmail is a honeypot for bots
+            if (fields['sendEmail']) {
+                console.error(
+                'Honeypot field sendEmail was filled out. * time: ' +
+                    new Date().toString()
+                );
+                if (target.redirect?.error) return res.redirect(target.redirect.error);
+                return res
+                .status(400)
+                .send({ message: 'human verification failed' })
+                .end();
+            }
+
             const validationResult = validate(fields, postBody);
 
             // validate fields
