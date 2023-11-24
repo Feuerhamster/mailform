@@ -5,7 +5,6 @@ import {TargetManager} from "./targetManager";
 import {Target} from "../@types/target";
 
 export class EmailService {
-
     private static targetTransports: Map<string, Transporter> = new Map<string, Transporter>();
 
     /**
@@ -27,7 +26,7 @@ export class EmailService {
 
         for (const fileKey in files) {
             const fileValue = files[fileKey];
-            const fileValues: FormidableFile[] = fileValue instanceof Array ? fileValue : [fileValue]
+            const fileValues: FormidableFile[] = fileValue instanceof Array ? fileValue : [fileValue];
 
             for (const singleFileValue of fileValues) {
                 attachments.push(this.mapFormidableFileToNodemailerAttachment(singleFileValue));
@@ -57,21 +56,19 @@ export class EmailService {
      * @return string The formatted "from" field
      */
     public static formatFromField(from: string, firstName: string = null, lastName: string = null): string {
-
         let result = "";
 
-        if(firstName) result += firstName;
+        if (firstName) result += firstName;
 
-        if(firstName && lastName) result += " ";
+        if (firstName && lastName) result += " ";
 
-        if(lastName) result += lastName;
+        if (lastName) result += lastName;
 
-        if(result.length > 0) result += ` <${from}>`;
+        if (result.length > 0) result += ` <${from}>`;
 
-        if(result.length < 1) result = from;
+        if (result.length < 1) result = from;
 
         return result;
-
     }
 
     /**
@@ -83,21 +80,26 @@ export class EmailService {
      * @param files Formidable files
      * @return Promise<boolean|Error> True if success, error object if not success
      */
-    public static async sendMail(targetName: string, from: string, subject: string, body: string, files: FormidableFiles): Promise<boolean|Error> {
-
-        if(!this.targetTransports.has(targetName)) return false;
+    public static async sendMail(
+        targetName: string,
+        from: string,
+        subject: string,
+        body: string,
+        files: FormidableFiles
+    ): Promise<boolean | Error> {
+        if (!this.targetTransports.has(targetName)) return false;
 
         let target: Target = TargetManager.targets.get(targetName);
 
         let transporter: Transporter = this.targetTransports.get(targetName);
 
         try {
-            await transporter.sendMail({
+            const result = await transporter.sendMail({
                 from,
                 replyTo: from,
                 to: target.recipients,
                 subject,
-                html: body,
+                text: body,
                 attachments: this.mapFormidableFilesToNodemailerAttachments(files),
             });
         } catch (e) {
@@ -112,7 +114,5 @@ export class EmailService {
         console.log("* time: " + new Date().toString());
 
         return true;
-
     }
-
 }

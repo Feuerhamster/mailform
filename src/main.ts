@@ -5,8 +5,8 @@ import {TargetManager} from "./services/targetManager";
 import routes from "./router";
 
 // Start express app
-const port = process.env.PORT || 0;
-const trustProxy: boolean = (process.env.PROXY === "true");
+const port = process.env.PORT || 7000;
+const trustProxy: boolean = process.env.PROXY === "true";
 
 const app: Application = express();
 
@@ -23,6 +23,6 @@ app.use(routes);
 
 // Create server
 const server: Server = app.listen(port, () => {
-    let { port } = server.address() as AddressInfo;
+    let {port} = server.address() as AddressInfo;
     console.log("MailForm started on port " + port);
 });
