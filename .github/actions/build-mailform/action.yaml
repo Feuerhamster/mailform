@@ -1,0 +1,56 @@
+name: "Build Mailform"
+env:
+    DOCKER_CONFIG: $HOME/.docker
+description: "Build mailform image"
+inputs:
+    image:
+        description: "Container image name"
+        required: true
+    registry:
+        description: "Container registry Host"
+        required: true
+    username:
+        description: "Username for the registry"
+        required: true
+    password:
+        description: "Password for the registry"
+        required: true
+    dockerfile:
+        description: "Dockerfile to build"
+        default: "Dockerfile"
+    dockerfile-args:
+        description: "Dockerfile build args"
+        default: ""
+runs:
+    using: "composite"
+    steps:
+        # Cache Docker layers https://evilmartians.com/chronicles/build-images-on-github-actions-with-docker-layer-caching
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+
+        - name: Cache Docker layers
+          uses: actions/cache@v3
+          with:
+              path: /tmp/.buildx-cache
+              key: ${{ runner.os }}-buildx-${{ github.sha }}
+              restore-keys: |
+                  ${{ runner.os }}-buildx-
+
+        # https://github.com/marketplace/actions/docker-login
+        - name: Login to container registry
+          uses: docker/login-action@v2
+          with:
+              registry: ${{ inputs.registry }}
+              username: ${{ inputs.username }}
+              password: ${{ inputs.password }}
+
+        - name: Build and push image
+          uses: docker/build-push-action@v3
+          with:
+              context: ./website
+              file: ./website/${{ inputs.dockerfile }}
+              build-args: ${{ inputs.dockerfile-args }}
+              push: true
+              tags: ${{ inputs.registry }}/${{ inputs.image }}
+              cache-from: type=gha,src=/tmp/.buildx-cache
+              cache-to: type=gha,dest=/tmp/.buildx-cache

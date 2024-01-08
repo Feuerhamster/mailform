@@ -1,0 +1,36 @@
+name: build mailform
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: "Container Tag"
+                required: true
+    schedule:
+        - cron: "0 23 * * 0"
+
+concurrency: build-${{ github.ref }}
+
+env:
+    OCI_IMAGE_TAG: library/mailform:${{ github.event.inputs.tag || github.event.release.tag_name || 'latest' }}
+    DOCKER_CONFIG: $HOME/.docker
+
+jobs:
+    # ------------------------------------------------------------
+    build-mailform:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: "20"
+            - name: Build Mailform
+              id: build-mailform
+              uses: ./.github/actions/build-mailform
+              with:
+                  image: ${{ env.OCI_IMAGE_TAG }}
+                  registry: ${{ secrets.OCI_REGISTRY_HOST }}
+                  username: ${{ secrets.OCI_HRBR_USERNAME }}
+                  password: ${{ secrets.OCI_HRBR_PASSWORD }}
