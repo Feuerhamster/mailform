@@ -47,8 +47,8 @@ runs:
         - name: Build and push image
           uses: docker/build-push-action@v3
           with:
-              context: ./website
-              file: ./website/${{ inputs.dockerfile }}
+              context: ./
+              file: ./${{ inputs.dockerfile }}
               build-args: ${{ inputs.dockerfile-args }}
               push: true
               tags: ${{ inputs.registry }}/${{ inputs.image }}
