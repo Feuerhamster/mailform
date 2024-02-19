@@ -83,6 +83,7 @@ They are JSON files placed in the `/targets` directory.
 - `origin` *optional* | A HTTP origin that is used for CORS and to restrict access. Default is * if not set.
 - `recipients` *required* | An array of email addresses which should receive the email.
 - `from` *optional* | The "from" field of an email. This is used as fallback if no "from" is provided in the request.
+- `subjectPrefix` *optional* | A target-wide prefix for the email subject.
 - `key` *optional* | A string used as API key if you want to restrict access to this target.
 - `redirect` *optional*:
   - `success` *optional*: A valid URL to redirect the user if the mail was sent successful.
@@ -103,6 +104,7 @@ Whether as formular data or json, the fields are the same.
 - `from` *optional* | The email address of the sender. If this filed is not set, the "from" field of your target will be used.
 - `firstName` *optional* | A classic first name filed which will be attached to the "from" field of the email.
 - `lastName` *optional* | A classic last name filed which will be attached to the "from" field of the email.
+- `subjectPrefix` *optional* | A Prefix for the email subject.
 - `subject` *required* | The email subject.
 - `body` *required* | The email body (supports HTML).
   
@@ -131,6 +133,7 @@ If you use an API request, you have to fill it manually.
     <input type="email" name="from" placeholder="Sender's email address"/>
     <input type="text" name="firstName" placeholder="First name" />
     <input type="text" name="lastName" placeholder="Last name" />
+    <input type="hidden" name="subjectPrefix" value="[App-Question] " />
     <input type="text" name="subject" placeholder="Subject" />
     <div class="g-recaptcha" data-sitekey="your_site_key"></div>
     <textarea name="body" placeholder="Your message"></textarea>
