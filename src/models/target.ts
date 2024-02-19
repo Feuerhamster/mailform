@@ -25,19 +25,11 @@ export const targetModel = {
     },
     "redirect.success": {
         type: "string",
-        presence: false,
-        url: {
-            schemes: ["http", "https"],
-            allowLocal: true
-        }
+        presence: false
     },
     "redirect.error": {
         type: "string",
-        presence: false,
-        url: {
-            schemes: ["http", "https"],
-            allowLocal: true
-        }
+        presence: false
     },
     key: {
         type: "string",

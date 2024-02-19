@@ -33,7 +33,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
 
     // Check origin
     if(target.origin && target.origin !== req.header("origin")) {
-        if(target.redirect?.error) return res.redirect(target.redirect.error);
+        if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
         return res.status(403).end();
     }
 
@@ -42,7 +42,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
         let bearer = /Bearer (.+)/.exec(req.headers.authorization);
 
         if(!bearer || bearer[1] !== target.key) {
-            if(target.redirect?.error) return res.redirect(target.redirect.error);
+            if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
             return res.status(401).end();
         }
     }
@@ -64,7 +64,7 @@ router.post("/:target", async (req: Request, res: Response) => {
     const form = formidable({});
     form.parse(req, async (err, fields, files) => {
         if (err) {
-            if(target.redirect?.error) return res.redirect(target.redirect.error);
+            if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
             return res.status(500).send({ message: "Parse Error" }).end();
         } else {
             const validationResult = validate(fields, postBody);
@@ -81,7 +81,7 @@ router.post("/:target", async (req: Request, res: Response) => {
                 let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
 
                 if(!verified) {
-                    if(target.redirect?.error) return res.redirect(target.redirect.error);
+                    if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
                     return res.status(400).send({ message: "captcha verification failed" }).end();
                 }
             }
@@ -98,18 +98,29 @@ router.post("/:target", async (req: Request, res: Response) => {
             let sent = await EmailService.sendMail(req.params.target, from, fieldSubject, fieldBody, files);
 
             if(sent instanceof Error || !sent) {
-                if(target.redirect?.error) return res.redirect(target.redirect.error);
+                if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
                 return res.status(500).send({ message: (<Error>sent).message }).end();
             }
 
             if(target.redirect?.success) {
-                return res.redirect(target.redirect.success);
+                return res.redirect(getRedirectUrl(req, target.redirect.success));
             }
 
             return res.status(200).end();
         }
     });
 });
+
+function getRedirectUrl(req: Request, targetRedirectUrl: string) {
+    let redirectUrl = targetRedirectUrl
+
+    const urlPattern = /^(https?):\/\//;
+    if(!urlPattern.test(redirectUrl)) {
+        redirectUrl = (req.header('Referer') || '/') + redirectUrl;
+    }
+
+    return redirectUrl
+}
 
 router.all("*", (req: Request, res: Response) => res.status(404).end());
 

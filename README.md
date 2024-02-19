@@ -85,8 +85,8 @@ They are JSON files placed in the `/targets` directory.
 - `from` *optional* | The "from" field of an email. This is used as fallback if no "from" is provided in the request.
 - `key` *optional* | A string used as API key if you want to restrict access to this target.
 - `redirect` *optional*:
-  - `success` *optional*: A valid URL to redirect the user if the mail was sent successful.
-  - `error` *optional*: A valid URL to redirect the user if the mail can't be sent due to an error.
+  - `success` *optional*: A valid relative or absolute URL to redirect the user if the mail was sent successful.
+  - `error` *optional*: A valid relative or absolute URL to redirect the user if the mail can't be sent due to an error.
 - `rateLimit` *required*:
     - `timespan` *required* | Timespan (in seconds) for the rate limiter to reset.
     - `requests` *required* | Allowed amount of requests in the given timespan.
