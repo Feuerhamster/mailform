@@ -17,7 +17,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
 
     // Check if target exist
     if(!TargetManager.targets.has(req.params.target)) {
-        return res.send(404);
+        return res.sendStatus(404);
     }
 
     let target: Target = TargetManager.targets.get(req.params.target);
