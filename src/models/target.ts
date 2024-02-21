@@ -19,6 +19,10 @@ export const targetModel = {
         type: "string",
         presence: false
     },
+    subjectPrefix: {
+        type: "string",
+        presence: false
+    },
     redirect: {
         type: "object",
         presence: false

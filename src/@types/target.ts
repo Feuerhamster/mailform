@@ -3,6 +3,7 @@ export interface Target {
     origin: string;
     recipients: string[];
     from?: string;
+    subjectPrefix?: string;
     redirect?: Redirects;
     key?: string;
     rateLimit?: TargetRateLimit;
