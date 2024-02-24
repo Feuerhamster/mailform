@@ -7,6 +7,7 @@ import validate from "./services/validate";
 import {postBody} from "./models/post";
 import {EmailService} from "./services/email";
 import {CaptchaService} from "./services/captcha";
+import getRedirectUrl from "./util/redirect";
 
 const router: Router = Router();
 
@@ -110,17 +111,6 @@ router.post("/:target", async (req: Request, res: Response) => {
         }
     });
 });
-
-function getRedirectUrl(req: Request, targetRedirectUrl: string) {
-    let redirectUrl = targetRedirectUrl
-
-    const urlPattern = /^(https?):\/\//;
-    if(!urlPattern.test(redirectUrl)) {
-        redirectUrl = (req.header('Referer') || '/') + redirectUrl;
-    }
-
-    return redirectUrl
-}
 
 router.all("*", (req: Request, res: Response) => res.status(404).end());
 
