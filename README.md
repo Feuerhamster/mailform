@@ -86,8 +86,8 @@ They are JSON files placed in the `/targets` directory.
 - `subjectPrefix` *optional* | A target-wide prefix for the email subject.
 - `key` *optional* | A string used as API key if you want to restrict access to this target.
 - `redirect` *optional*:
-  - `success` *optional*: A valid URL to redirect the user if the mail was sent successful.
-  - `error` *optional*: A valid URL to redirect the user if the mail can't be sent due to an error.
+  - `success` *optional*: A valid relative or absolute URL to redirect the user if the mail was sent successful.
+  - `error` *optional*: A valid relative or absolute URL to redirect the user if the mail can't be sent due to an error.
 - `rateLimit` *required*:
     - `timespan` *required* | Timespan (in seconds) for the rate limiter to reset.
     - `requests` *required* | Allowed amount of requests in the given timespan.
