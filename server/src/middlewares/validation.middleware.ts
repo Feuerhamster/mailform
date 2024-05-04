@@ -92,3 +92,15 @@ export function validateOptional(schema: Schema) {
 	return (req: IRequest, res: IResponse, next: NextFunction) =>
 		validateBody(req, res, next, schema, options);
 }
+
+export function validateStandalone(
+	schema: Schema,
+	req: IRequest,
+	res: IResponse,
+	options?: ValidationMiddlewareOptions,
+) {
+	return new Promise(async (resolve, reject) => {
+		await validate(schema, options)(req, res, () => resolve(null));
+		reject();
+	});
+}

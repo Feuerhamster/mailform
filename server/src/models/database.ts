@@ -36,7 +36,7 @@ export interface ITargetTable {
 
 	origin: string | null;
 
-	from: string | null;
+	from: string;
 
 	recipients: JSONColumnType<string[]>;
 

@@ -10,6 +10,7 @@ import {
 	IsOptional,
 	IsString,
 	IsUrl,
+	Length,
 } from "class-validator";
 
 export class TargetAdd extends RequestBody {
@@ -20,7 +21,9 @@ export class TargetAdd extends RequestBody {
 	@IsEnum(ETargetType)
 	type!: ETargetType;
 
-	@IsUrl({ protocols: ["smtp", "smtps"], require_protocol: true })
+	// @IsUrl({ protocols: ["smtp", "smtps"], require_protocol: true, allow_underscores: true })
+	@IsString()
+	@IsNotEmpty()
 	smtp!: string;
 
 	@IsArray()
@@ -37,9 +40,8 @@ export class TargetAdd extends RequestBody {
 	@IsEnum(ETargetAllowFiles)
 	allowFiles?: ETargetAllowFiles;
 
-	@IsOptional()
 	@IsEmail()
-	from?: string;
+	from!: string;
 
 	@IsOptional()
 	@IsString()
@@ -68,4 +70,45 @@ export class TargetAdd extends RequestBody {
 	@IsOptional()
 	@IsString()
 	captcha_secret?: string;
+}
+
+export class ExecuteTarget extends RequestBody {
+	@IsOptional()
+	@IsEmail()
+	from?: string;
+
+	@IsOptional()
+	@IsString()
+	@IsNotEmpty()
+	@Length(1, 200)
+	firstName?: string;
+
+	@IsOptional()
+	@IsString()
+	@IsNotEmpty()
+	@Length(1, 200)
+	lastName?: string;
+
+	@IsOptional()
+	@IsString()
+	@Length(1, 100)
+	subjectPrefix?: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Length(1, 512)
+	subject!: string;
+
+	@IsString()
+	@IsNotEmpty()
+	@Length(5, 10000)
+	body!: string;
+
+	@IsOptional()
+	@IsString()
+	"g-recaptcha-response"?: string;
+
+	@IsOptional()
+	@IsString()
+	"h-captcha-response"?: string;
 }

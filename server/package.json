@@ -13,18 +13,19 @@
 	"author": "Feuerhamster",
 	"license": "ISC",
 	"devDependencies": {
+		"@types/better-sqlite3": "^7.6.10",
+		"@types/cookie-parser": "^1.4.7",
 		"@types/cors": "^2.8.17",
 		"@types/express": "^4.17.21",
+		"@types/formidable": "^3.4.5",
 		"@types/node-cleanup": "^2.1.5",
+		"@types/nodemailer": "^6.4.15",
 		"prettier": "^3.2.5",
 		"tsc-alias": "^1.8.8",
 		"typescript": "^5.4.5"
 	},
 	"dependencies": {
 		"@overnightjs/core": "^1.7.6",
-		"@types/better-sqlite3": "^7.6.10",
-		"@types/cookie-parser": "^1.4.7",
-		"@types/nodemailer": "^6.4.15",
 		"axios": "^1.6.8",
 		"better-sqlite3": "^9.6.0",
 		"class-transformer": "^0.5.1",
@@ -33,9 +34,12 @@
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
+		"formidable": "^3.5.1",
 		"kysely": "^0.27.3",
 		"nanoid": "^5.0.7",
+		"node-cache": "^5.1.2",
 		"node-cleanup": "^2.1.2",
-		"nodemailer": "^6.9.13"
+		"nodemailer": "^6.9.13",
+		"rate-limiter-flexible": "^5.0.3"
 	}
 }

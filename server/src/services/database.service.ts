@@ -30,7 +30,7 @@ export function initDatabase() {
 		.addColumn("smtp", "text", (cb) => cb.notNull())
 		.addColumn("recipients", "text", (cb) => cb.notNull())
 		.addColumn("origin", "text")
-		.addColumn("from", "text")
+		.addColumn("from", "text", (cb) => cb.notNull())
 		.addColumn("subject_prefix", "text")
 		.addColumn("allowFiles", "integer")
 		.addColumn("ratelimit_timespan", "integer")
@@ -46,6 +46,10 @@ export function initDatabase() {
 
 export function getAllTargets() {
 	return db.selectFrom("targets").selectAll().execute();
+}
+
+export function getTarget(id: string) {
+	return db.selectFrom("targets").where("targets.id", "=", id).selectAll().executeTakeFirst();
 }
 
 export async function insertTarget(input: TargetAdd) {
