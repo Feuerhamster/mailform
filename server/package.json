@@ -1,0 +1,31 @@
+{
+	"name": "mailform-server",
+	"version": "2.0.0",
+	"description": "",
+	"main": "dist/main.js",
+	"scripts": {
+		"tsc": "tsc",
+		"build": "npx tsc --sourceMap false && tsc-alias",
+		"start": "node dist/main.js",
+		"dev": "tsc && tsc-alias && node dist/main.js --dev"
+	},
+	"author": "Feuerhamster",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/cors": "^2.8.17",
+		"@types/express": "^4.17.21",
+		"@types/node-cleanup": "^2.1.5",
+		"prettier": "^3.2.5",
+		"tsc-alias": "^1.8.8",
+		"typescript": "^5.4.5"
+	},
+	"dependencies": {
+		"@overnightjs/core": "^1.7.6",
+		"axios": "^1.6.8",
+		"class-transformer": "^0.5.1",
+		"class-validator": "^0.14.1",
+		"cors": "^2.8.5",
+		"express": "^4.19.2",
+		"node-cleanup": "^2.1.2"
+	}
+}

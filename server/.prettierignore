@@ -1,0 +1,13 @@
+node_modules
+/dist
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.example
+config.json
+
+# Ignore files for PNPM, NPM and YARN
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
