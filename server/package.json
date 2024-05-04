@@ -1,6 +1,7 @@
 {
 	"name": "mailform-server",
 	"version": "2.0.0",
+	"type": "module",
 	"description": "",
 	"main": "dist/main.js",
 	"scripts": {
@@ -21,11 +22,20 @@
 	},
 	"dependencies": {
 		"@overnightjs/core": "^1.7.6",
+		"@types/better-sqlite3": "^7.6.10",
+		"@types/cookie-parser": "^1.4.7",
+		"@types/nodemailer": "^6.4.15",
 		"axios": "^1.6.8",
+		"better-sqlite3": "^9.6.0",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
+		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"dotenv": "^16.4.5",
 		"express": "^4.19.2",
-		"node-cleanup": "^2.1.2"
+		"kysely": "^0.27.3",
+		"nanoid": "^5.0.7",
+		"node-cleanup": "^2.1.2",
+		"nodemailer": "^6.9.13"
 	}
 }

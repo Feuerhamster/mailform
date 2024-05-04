@@ -53,6 +53,10 @@ async function validateBody(
 		},
 	};
 
+	if (!req.body) {
+		return res.error!("validation_error");
+	}
+
 	let errors: ClassValidator.ValidationError[] = await ClassValidator.validate(
 		_options.source == EValidationDataSource.Query ? req.query : req.body,
 		validatorOptions,

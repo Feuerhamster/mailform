@@ -3,3 +3,5 @@ node_modules
 client_secret*.json
 config.json
 dist
+.env
+database
