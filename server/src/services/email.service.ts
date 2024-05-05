@@ -1,39 +1,38 @@
 import { Target } from "$models/database.js";
-import { File as FormidableFile, Files as FormidableFiles } from "formidable";
 import nodemailer, { Transporter } from "nodemailer";
-import { Attachment as NodemailerAttachment } from "nodemailer/lib/mailer";
+import Mail, { Attachment as NodemailerAttachment } from "nodemailer/lib/mailer";
 
 /**
- * Map file objects from formidable to attachment objects for nodemailer
- * @param files Formidable files
+ * Map file objects from file to attachment objects for nodemailer
+ * @param files Multer files
  * @return NodemailerAttachment[]
  */
-function mapFormidableFilesToNodemailerAttachments(files: FormidableFiles): NodemailerAttachment[] {
+function mapFilesToNodemailerAttachments(files: Express.Multer.File[]): NodemailerAttachment[] {
 	const attachments: NodemailerAttachment[] = [];
 
-	for (const fileKey in files) {
-		const fileValue = files[fileKey];
-		if (!fileValue) continue;
-		const fileValues: FormidableFile[] = fileValue instanceof Array ? fileValue : [fileValue];
-
-		for (const singleFileValue of fileValues) {
-			attachments.push(mapFormidableFileToNodemailerAttachment(singleFileValue));
-		}
+	for (const file of files) {
+		attachments.push({
+			path: file.path,
+			filename: file.originalname || undefined,
+			contentType: file.mimetype || undefined,
+		});
 	}
+
 	return attachments;
 }
 
-/**
- * Map file object from formidable to attachment object for nodemailer
- * @param file Formidable file
- * @return NodemailerAttachment
- */
-function mapFormidableFileToNodemailerAttachment(file: FormidableFile): NodemailerAttachment {
-	return {
-		path: file.filepath,
-		filename: file.originalFilename || undefined,
-		contentType: file.mimetype || undefined,
-	};
+export function mapFiles(files: Express.Request["files"]): Express.Multer.File[] {
+	const fileArray: Express.Multer.File[] = [];
+
+	if (Array.isArray(files)) {
+		fileArray.push(...files);
+	} else if (typeof files === "object") {
+		for (const [key, value] of Object.entries(files)) {
+			fileArray.push(...value);
+		}
+	}
+
+	return fileArray;
 }
 
 /**
@@ -50,18 +49,23 @@ export async function sendMail(
 	replyTo: string,
 	subject: string,
 	body: string,
-	files: FormidableFiles,
+	files?: Express.Multer.File[],
 ): Promise<boolean | Error> {
 	const transporter = nodemailer.createTransport(target.smtp);
 
-	await transporter.sendMail({
+	let mail: Mail.Options = {
 		from: target.from,
 		replyTo,
 		to: target.recipients,
 		subject,
 		html: body,
-		attachments: mapFormidableFilesToNodemailerAttachments(files),
-	});
+	};
+
+	if (files) {
+		mail.attachments = mapFilesToNodemailerAttachments(files);
+	}
+
+	await transporter.sendMail(mail);
 
 	return true;
 }

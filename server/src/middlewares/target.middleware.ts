@@ -2,7 +2,9 @@ import { RateLimiter } from "$services/ratelimiter.service.js";
 import { fetchTarget } from "$services/target.service.js";
 import { StatusCode } from "$types/httpStatusCodes.js";
 import getRedirectUrl from "$utils/redirect.util.js";
-import { IRequest, IResponse, NextFunction } from "express";
+import { IRequest, IResponse } from "express";
+import { createHash } from "crypto";
+import { ETargetAllowFiles, ETargetStatus } from "$models/database.js";
 
 export async function targetPreHandler(
 	req: IRequest<unknown, unknown, { targetId: string }>,
@@ -21,6 +23,21 @@ export async function targetPreHandler(
 
 	if (req.method === "OPTIONS") {
 		return res.status(StatusCode.OK).end();
+	}
+
+	if (target.status === ETargetStatus.DISABLED) {
+		if (target.error_redirect) {
+			return res.redirect(getRedirectUrl(req, target.error_redirect));
+		}
+		return res.error!("access_denied");
+	}
+
+	// Check files
+	if (target.allowFiles === ETargetAllowFiles.FALSE && req.files) {
+		if (target.error_redirect) {
+			return res.redirect(getRedirectUrl(req, target.error_redirect));
+		}
+		return res.error!("no_files_allowed");
 	}
 
 	// Check origin
@@ -49,6 +66,18 @@ export async function targetPreHandler(
 
 	if (target.ratelimit_timespan && target.ratelimit_requests) {
 		RateLimiter.registerTarget(target.id, target.ratelimit_timespan, target.ratelimit_requests);
+	}
+
+	if (!req.ip) {
+		if (target.error_redirect) return res.redirect(getRedirectUrl(req, target.error_redirect));
+		return res.error!("action_not_allowed");
+	}
+
+	const ipHash = createHash("sha256").update(req.ip).digest("hex");
+
+	// Check rate limit
+	if (!(await RateLimiter.consume(req.params.targetId, ipHash))) {
+		return res.status(429).end();
 	}
 
 	return true;
