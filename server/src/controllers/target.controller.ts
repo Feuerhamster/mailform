@@ -14,13 +14,14 @@ import validate, {
 import { ExecuteTarget, TargetAdd } from "$models/request/target.request.js";
 import { StatusCode } from "$types/httpStatusCodes.js";
 import { targetPreHandler } from "$middlewares/target.middleware.js";
-import { RateLimiter } from "$services/ratelimiter.service.js";
-import { createHash } from "crypto";
+
 import { fetchTarget } from "$services/target.service.js";
-import formidable from "formidable";
 import getRedirectUrl from "$utils/redirect.util.js";
 import { formatFromField } from "$utils/formatFromField.util.js";
-import { sendMail } from "$services/email.service.js";
+import { mapFiles, sendMail } from "$services/email.service.js";
+import multer from "multer";
+
+const upload = multer({ dest: "./attatchment-uploads/" });
 
 @Controller("targets")
 export default class AuthController {
@@ -76,21 +77,16 @@ export default class AuthController {
 	}
 
 	@Post(":targetId/execute")
+	@Middleware(upload.any())
+	@Middleware(validate(ExecuteTarget))
 	public async executeTarget(
 		req: IRequest<ExecuteTarget, {}, { targetId: string }>,
 		res: IResponse,
 	) {
-		await targetPreHandler(req, res);
+		const handled = await targetPreHandler(req, res);
 
-		if (!req.ip) {
-			return res.error!("action_not_allowed");
-		}
-
-		const ipHash = createHash("sha256").update(req.ip).digest("hex");
-
-		// Check rate limit
-		if (!(await RateLimiter.consume(req.params.targetId, ipHash))) {
-			return res.status(429).end();
+		if (handled !== true) {
+			return;
 		}
 
 		const target = await fetchTarget(req.params.targetId);
@@ -99,46 +95,23 @@ export default class AuthController {
 			return res.error!("not_found");
 		}
 
-		const form = formidable({});
-
-		let fields: formidable.Fields<string>;
-		let files: formidable.Files<string>;
-
-		try {
-			[fields, files] = await form.parse(req);
-		} catch (e) {
-			if (target.error_redirect) {
-				return res.redirect(getRedirectUrl(req, target.error_redirect));
-			}
-			return res.error!("operation_failed");
-		}
-
-		try {
-			await validateStandalone(ExecuteTarget, req, res);
-		} catch (e) {
-			return;
-		}
-
-		// extract fields
-		const fieldFrom = fields["from"] instanceof Array ? fields["from"][0] : fields["from"];
-		const fieldFirstName =
-			fields["firstName"] instanceof Array ? fields["firstName"][0] : fields["firstName"];
-		const fieldLastName =
-			fields["lastName"] instanceof Array ? fields["lastName"][0] : fields["lastName"];
-		const fieldSubjectPrefix =
-			fields["subjectPrefix"] instanceof Array
-				? fields["subjectPrefix"][0]
-				: fields["subjectPrefix"] ?? "";
 		const subject =
-			(target.subject_prefix ?? "") +
-			fieldSubjectPrefix +
-			(fields["subject"] instanceof Array ? fields["subject"][0] : fields["subject"]);
-		const fieldBody = fields["body"] instanceof Array ? fields["body"][0] : fields["body"];
+			(target.subject_prefix ?? "") + (req.body.subjectPrefix ?? "") + req.body.subject;
 
-		const replyTo = formatFromField(fieldFrom ?? target.from, fieldFirstName, fieldLastName);
+		const replyTo = formatFromField(
+			req.body.from ?? target.from,
+			req.body.firstName,
+			req.body.lastName,
+		);
 
 		try {
-			await sendMail(target, replyTo, subject, fieldBody || "", files);
+			await sendMail(
+				target,
+				replyTo,
+				subject,
+				req.body.body || "",
+				req.files ? mapFiles(req.files) : undefined,
+			);
 		} catch (e) {
 			if (target.error_redirect) {
 				return res.redirect(getRedirectUrl(req, target.error_redirect));

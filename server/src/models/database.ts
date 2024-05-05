@@ -4,11 +4,6 @@ export interface IDatabase {
 	targets: ITargetTable;
 }
 
-export enum ETargetType {
-	REDIRECT,
-	API,
-}
-
 export enum ECaptchaProvider {
 	RECAPTCHA,
 	HCAPTCHA,
@@ -29,7 +24,6 @@ export interface ITargetTable {
 
 	name: string;
 
-	type: ETargetType;
 	status: ETargetStatus;
 
 	smtp: string;
