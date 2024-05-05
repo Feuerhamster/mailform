@@ -1,4 +1,4 @@
-import { ECaptchaProvider, ETargetAllowFiles, ETargetType } from "$models/database.js";
+import { ECaptchaProvider, ETargetAllowFiles } from "$models/database.js";
 import { RequestBody } from "$models/request.js";
 import {
 	IsArray,
@@ -17,9 +17,6 @@ export class TargetAdd extends RequestBody {
 	@IsString()
 	@IsNotEmpty()
 	name!: string;
-
-	@IsEnum(ETargetType)
-	type!: ETargetType;
 
 	// @IsUrl({ protocols: ["smtp", "smtps"], require_protocol: true, allow_underscores: true })
 	@IsString()

@@ -1,4 +1,4 @@
-import { ETargetStatus, ETargetType, IDatabase, ITargetTable } from "$models/database.js";
+import { ETargetStatus, IDatabase, ITargetTable } from "$models/database.js";
 
 import SQLite from "better-sqlite3";
 import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from "kysely";
@@ -62,9 +62,7 @@ export async function insertTarget(input: TargetAdd) {
 		recipients: JSON.stringify(input.recipients),
 	};
 
-	if (input.type === ETargetType.API) {
-		target.api_key = generateKey();
-	}
+	target.api_key = generateKey();
 
 	await db.insertInto("targets").values(target).execute();
 }

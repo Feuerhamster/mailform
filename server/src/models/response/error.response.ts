@@ -10,6 +10,7 @@ export const responseErrorCodes = {
 	conflict: StatusCode.Conflict,
 	action_not_allowed: StatusCode.Forbidden,
 	access_denied: StatusCode.Forbidden,
+	no_files_allowed: StatusCode.BadRequest,
 } as const;
 
 export type ResponseErrorCode = keyof typeof responseErrorCodes;
