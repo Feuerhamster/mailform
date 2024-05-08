@@ -33,7 +33,6 @@ export async function initDatabase() {
 		.ifNotExists()
 		.addColumn("id", "varchar(16)", (cb) => cb.primaryKey().notNull())
 		.addColumn("name", "varchar(128)", (cb) => cb.notNull())
-		.addColumn("type", "integer", (cb) => cb.notNull())
 		.addColumn("status", "integer", (cb) => cb.notNull())
 		.addColumn("smtp", "text", (cb) => cb.notNull())
 		.addColumn("recipients", "text", (cb) => cb.notNull())
@@ -42,6 +41,7 @@ export async function initDatabase() {
 		.addColumn("subject_prefix", "text")
 		.addColumn("allow_files", "integer")
 		.addColumn("allow_templates", "integer")
+		.addColumn("allow_custom_recipients", "integer")
 		.addColumn("ratelimit_timespan", "integer")
 		.addColumn("ratelimit_requests", "integer")
 		.addColumn("api_key", "text")
@@ -78,10 +78,9 @@ export async function insertTarget(input: TargetAdd) {
 		...input,
 		allow_files: input.allow_files || 0,
 		allow_templates: input.allow_templates || 0,
+		allow_custom_recipients: input.allow_custom_recipients || 0,
 		recipients: JSON.stringify(input.recipients),
 	};
-
-	target.api_key = generateKey();
 
 	await db.insertInto("targets").values(target).execute();
 }

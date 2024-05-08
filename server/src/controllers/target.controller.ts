@@ -119,6 +119,7 @@ export default class AuthController {
 				replyTo,
 				subject,
 				emailBody,
+				req.body.to,
 				req.files ? mapFiles(req.files) : undefined,
 			);
 		} catch (e) {

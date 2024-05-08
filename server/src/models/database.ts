@@ -32,6 +32,7 @@ export interface ITargetTable {
 
 	allow_files: EDatabaseBoolean;
 	allow_templates: EDatabaseBoolean;
+	allow_custom_recipients: EDatabaseBoolean;
 
 	subject_prefix: string | null;
 

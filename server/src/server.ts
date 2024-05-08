@@ -15,6 +15,7 @@ export default class MailformServer extends Server {
 		this.app.set("trust proxy", config.proxy);
 		this.app.use(cookieParser());
 		this.app.use(express.json());
+		this.app.use(cors());
 		this.app.use(errorFunctionMiddleware);
 		this.setupControllers();
 	}
