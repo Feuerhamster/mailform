@@ -21,7 +21,7 @@ import { formatFromField } from "$utils/formatFromField.util.js";
 import { mapFiles, sendMail } from "$services/email.service.js";
 import multer from "multer";
 import { TargetUpdate } from "$models/database";
-import { renderTemplate } from "$services/template.service";
+import { renderTemplate } from "$services/template.service.js";
 
 const upload = multer({ dest: "./attatchment-uploads/" });
 

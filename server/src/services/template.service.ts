@@ -1,5 +1,5 @@
 import { Liquid } from "liquidjs";
-import { getTemplate } from "./database.service";
+import { getTemplate } from "./database.service.js";
 
 const liquidEngine = new Liquid();
 

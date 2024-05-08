@@ -1,17 +1,5 @@
-import { ECaptchaProvider, ETargetAllowFiles } from "$models/database.js";
 import { RequestBody } from "$models/request.js";
-import {
-	IsArray,
-	IsBoolean,
-	IsEmail,
-	IsEnum,
-	IsNotEmpty,
-	IsNumber,
-	IsOptional,
-	IsString,
-	IsUrl,
-	Length,
-} from "class-validator";
+import { IsNotEmpty, IsString, Length } from "class-validator";
 
 export class TemplateAdd extends RequestBody {
 	@IsString()
