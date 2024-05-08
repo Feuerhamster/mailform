@@ -11,7 +11,7 @@
 		gap: var(--default-padding-element);
 		background-color: var(--color-block);
 		padding: var(--default-padding-element);
-		border-bottom: 1px solid var(--color-block-accent);
+		border: 1px solid var(--color-block-accent);
 		border-radius: var(--default-border-radius);
 	}
 </style>

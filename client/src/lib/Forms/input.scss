@@ -10,4 +10,8 @@
 	font-weight: 500;
 	letter-spacing: 0.4px;
 	color: var(--color-text);
+
+	&:focus {
+		border-color: var(--color-primary);
+	}
 }

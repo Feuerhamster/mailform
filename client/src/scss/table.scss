@@ -1,0 +1,12 @@
+table {
+	tr {
+		th, td {
+			padding: var(--default-spacing-element);
+			text-align: left;
+		}
+
+		th {
+			border-bottom: 2px solid var(--color-block-accent);
+		}
+	}
+}

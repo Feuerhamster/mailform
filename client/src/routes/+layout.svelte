@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Navbar from "$lib/Navbar.svelte";
-	import "@fontsource/lexend";
-	import Cookies from "js-cookie";
+	import "@fontsource/lexend/500.css";
+	import "@fontsource/lexend/600.css";
+	import "@fontsource/lexend/700.css";
 	import Login from "./Login.svelte";
 	import { isLoggedIn } from "$lib/stores";
-
-	$isLoggedIn = Cookies.get("auth-token") ? true : false;
+	import "$lib/axios";
+	import Toasts from "./Toasts.svelte";
 </script>
 
 
@@ -19,6 +20,8 @@
 	</div>
 {/if}
 
+<Toasts />
+
 <style lang="scss">
 	@import "../scss/colors.scss";
 	@import "../scss/defaults.scss";
@@ -28,10 +31,10 @@
 	}
 
 	:global(html) {
-		font-size: 21px;
+		font-size: 18px;
 		font-family: "Lexend Variable", sans-serif;
 		color: var(--color-text);
-		font-weight: 400;
+		font-weight: 500;
 		letter-spacing: 0.2px;
 	}
 
@@ -47,7 +50,10 @@
 		:global(main) {
 			display: flex;
 			flex-direction: column;
+			align-items: center;
 			flex: 1;
+			padding: var(--default-spacing-page);
+			gap: var(--default-spacing-page);
 		}
 	}
 

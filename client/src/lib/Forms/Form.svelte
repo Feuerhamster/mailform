@@ -11,7 +11,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: var(--default-spacing-page);
+		gap: 1rem;
 
 		&.fullsize {
 			align-items: stretch;

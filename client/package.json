@@ -29,7 +29,6 @@
 		"@fontsource/lexend": "^5.0.20",
 		"@types/js-cookie": "^3.0.6",
 		"axios": "^1.6.8",
-		"js-cookie": "^3.0.5",
 		"lucide-svelte": "^0.378.0",
 		"sass": "^1.76.0"
 	}
