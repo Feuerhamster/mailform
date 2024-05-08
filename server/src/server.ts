@@ -24,10 +24,12 @@ export default class MailformServer extends Server {
 		const DefaultController = (await import("./controllers/default.controller.js")).default;
 		const AuthController = (await import("./controllers/auth.controller.js")).default;
 		const TargetController = (await import("./controllers/target.controller.js")).default;
+		const TemplateController = (await import("./controllers/template.controller.js")).default;
 
 		super.addControllers([new DefaultController()]);
 		super.addControllers([new AuthController()]);
 		super.addControllers([new TargetController()]);
+		super.addControllers([new TemplateController()]);
 	}
 
 	public start(port: number): void {

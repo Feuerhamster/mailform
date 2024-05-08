@@ -1,9 +1,5 @@
 import { Insertable, JSONColumnType, Selectable, Updateable } from "kysely";
 
-export interface IDatabase {
-	targets: ITargetTable;
-}
-
 export enum ECaptchaProvider {
 	RECAPTCHA,
 	HCAPTCHA,
@@ -14,7 +10,7 @@ export enum ETargetStatus {
 	DISABLED,
 }
 
-export enum ETargetAllowFiles {
+export enum EDatabaseBoolean {
 	FALSE,
 	TRUE,
 }
@@ -34,7 +30,8 @@ export interface ITargetTable {
 
 	recipients: JSONColumnType<string[]>;
 
-	allowFiles: ETargetAllowFiles;
+	allow_files: EDatabaseBoolean;
+	allow_templates: EDatabaseBoolean;
 
 	subject_prefix: string | null;
 
@@ -53,3 +50,18 @@ export interface ITargetTable {
 export type Target = Selectable<ITargetTable>;
 export type NewTarget = Insertable<ITargetTable>;
 export type TargetUpdate = Updateable<ITargetTable>;
+
+export interface ITemplateTable {
+	id: string;
+	name: string;
+	template: string;
+}
+
+export type Template = Selectable<ITemplateTable>;
+export type NewTemplate = Insertable<ITemplateTable>;
+export type TemplateUpdate = Updateable<ITemplateTable>;
+
+export interface IDatabase {
+	targets: ITargetTable;
+	templates: ITemplateTable;
+}
