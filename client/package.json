@@ -13,6 +13,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"prettier": "^3.1.1",
@@ -23,5 +24,13 @@
 		"typescript": "^5.0.0",
 		"vite": "^5.0.3"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@fontsource/lexend": "^5.0.20",
+		"@types/js-cookie": "^3.0.6",
+		"axios": "^1.6.8",
+		"js-cookie": "^3.0.5",
+		"lucide-svelte": "^0.378.0",
+		"sass": "^1.76.0"
+	}
 }
