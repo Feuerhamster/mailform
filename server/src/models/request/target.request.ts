@@ -1,4 +1,4 @@
-import { ECaptchaProvider, ETargetAllowFiles } from "$models/database.js";
+import { ECaptchaProvider, EDatabaseBoolean } from "$models/database.js";
 import { RequestBody } from "$models/request.js";
 import {
 	IsArray,
@@ -7,6 +7,7 @@ import {
 	IsEnum,
 	IsNotEmpty,
 	IsNumber,
+	IsObject,
 	IsOptional,
 	IsString,
 	IsUrl,
@@ -34,8 +35,12 @@ export class TargetAdd extends RequestBody {
 	origin?: string;
 
 	@IsOptional()
-	@IsEnum(ETargetAllowFiles)
-	allowFiles?: ETargetAllowFiles;
+	@IsEnum(EDatabaseBoolean)
+	allow_files?: EDatabaseBoolean;
+
+	@IsOptional()
+	@IsEnum(EDatabaseBoolean)
+	allow_templates?: EDatabaseBoolean;
 
 	@IsEmail()
 	from!: string;
@@ -100,6 +105,15 @@ export class ExecuteTarget extends RequestBody {
 	@IsNotEmpty()
 	@Length(5, 10000)
 	body!: string;
+
+	@IsOptional()
+	@IsNotEmpty()
+	@Length(16)
+	template?: string;
+
+	@IsOptional()
+	@IsObject()
+	templateData?: Object;
 
 	@IsOptional()
 	@IsString()
