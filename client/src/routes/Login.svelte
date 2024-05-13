@@ -1,11 +1,12 @@
 <script lang="ts">
-	import Box from "$lib/Box.svelte";
-	import Button from "$lib/Button.svelte";
-	import Form from "$lib/Forms/Form.svelte";
-	import Input from "$lib/Forms/Input.svelte";
 	import axios from "axios";
-	import { pushToast } from "./Toasts.svelte";
-	import { isLoggedIn } from "$lib/stores";
+	import { authorizationKey } from "$lib/stores";
+	import * as Card from "$lib/components/ui/card/index";
+	import Input from "$lib/components/ui/input/input.svelte";
+	import Label from "$lib/components/ui/label/label.svelte";
+	import Button from "$lib/components/ui/button/button.svelte";
+	import { toast } from "svelte-sonner";
+	import { LoaderCircle } from "lucide-svelte";
 
 	let loading = false;
 
@@ -18,39 +19,45 @@
 		loading = true;
 
 		try {
-			await axios.post("/auth/login", loginData);
+			const res = await axios.post("/auth/login", loginData);
+			authorizationKey.set(res.data);
 		} catch(e) {
-			pushToast("Login failed", "error");
+			toast.error("Login failed");
 			loading = false;
 			return;
 		}
 
 		loading = false;
-		pushToast("Login success", "success");
-		$isLoggedIn = true;
+		toast.success("Successfully logged in");
+		axios.defaults.headers.common.Authorization = "Bearer " + $authorizationKey;
 	}
 </script>
 
-<Box>
-	<h1>Mailform</h1>
-	<h2>Login</h2>
-	<Form on:submit={login}>
-		<Input placeholder="Username" required bind:value={loginData.username} />
-		<Input placeholder="Password" type="password" required bind:value={loginData.password} />
-		<Button {loading}>Log in</Button>
-	</Form>
-</Box>
+<Card.Root>
+	<Card.Header>
+		<Card.Title class="text-2xl">Mailform</Card.Title>
+		<Card.Description>Log in to your Mailform control panel</Card.Description>
+	</Card.Header>
+	<Card.Content>
+		<form class="grid gap-4" on:submit|preventDefault={login}>
+			<Label class="grid gap-2">
+				Username
+				<Input placeholder="Type your username" bind:value={loginData.username} />
+			</Label>
+			
 
-<style lang="scss">
-	h1, h2 {
-		margin: 0;
-	}
+			<Label class="grid gap-2">
+				Password
+				<Input placeholder="Type your password" type="password" bind:value={loginData.password} />
+			</Label>
 
-	h1 {
-		font-weight: 600;
-	}
-
-	h2 {
-		font-weight: 500;
-	}
-</style>
+			<Button type="submit" disabled={loading}>
+				{#if !loading}
+					Log in
+				{:else}
+					<LoaderCircle class="animate-spin" />
+				{/if}
+			</Button>
+		</form>
+	</Card.Content>
+</Card.Root>

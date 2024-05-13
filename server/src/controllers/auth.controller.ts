@@ -17,8 +17,6 @@ export default class AuthController {
 
 		const token = sign();
 
-		res.cookie("auth-token", token);
-
-		res.status(200).end();
+		res.send(token).end();
 	}
 }

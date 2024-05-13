@@ -1,68 +1,22 @@
-<script lang="ts">
-	import Navbar from "$lib/Navbar.svelte";
-	import "@fontsource/lexend/500.css";
-	import "@fontsource/lexend/600.css";
-	import "@fontsource/lexend/700.css";
+<script>
+	import "../app.css";
+	import "@fontsource/atkinson-hyperlegible";
 	import Login from "./Login.svelte";
-	import { isLoggedIn } from "$lib/stores";
+	import { authorizationKey } from "$lib/stores";
 	import "$lib/axios";
-	import Toasts from "./Toasts.svelte";
+	import { Toaster } from "$lib/components/ui/sonner";
+	import Navbar from "$lib/Navbar.svelte";
 </script>
 
-
-{#if $isLoggedIn}
-	<Navbar/>
-
-	<slot />
+{#if $authorizationKey}
+	<Navbar />
+	<div class="flex flex-col items-center gap-8 p-8">
+		<slot></slot>
+	</div>
 {:else}
-	<div class="center">
-		<Login />
+	<div class="flex min-h-screen items-center justify-center">
+		<Login></Login>
 	</div>
 {/if}
 
-<Toasts />
-
-<style lang="scss">
-	@import "../scss/colors.scss";
-	@import "../scss/defaults.scss";
-
-	:global(*) {
-		box-sizing: border-box;
-	}
-
-	:global(html) {
-		font-size: 18px;
-		font-family: "Lexend Variable", sans-serif;
-		color: var(--color-text);
-		font-weight: 500;
-		letter-spacing: 0.2px;
-	}
-
-	:global(body) {
-		background-color: var(--color-bg);
-		display: flex;
-		height: 100vh;
-		margin: 0;
-		user-select: none;
-
-
-
-		:global(main) {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			flex: 1;
-			padding: var(--default-spacing-page);
-			gap: var(--default-spacing-page);
-		}
-	}
-
-	.center {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--default-spacing-page);
-		flex: 1;
-	}
-</style>
+<Toaster position="bottom-center" />

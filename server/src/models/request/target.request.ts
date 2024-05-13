@@ -1,4 +1,4 @@
-import { ECaptchaProvider, EDatabaseBoolean } from "$models/database.js";
+import { ECaptchaProvider, EDatabaseBoolean, ETargetStatus } from "$models/database.js";
 import { RequestBody } from "$models/request.js";
 import {
 	IsArray,
@@ -29,6 +29,10 @@ export class TargetAdd extends RequestBody {
 	@IsNotEmpty({ each: true })
 	@IsEmail({}, { each: true })
 	recipients!: string[];
+
+	@IsOptional()
+	@IsEnum(ETargetStatus)
+	status?: ETargetStatus;
 
 	@IsOptional()
 	@IsString()

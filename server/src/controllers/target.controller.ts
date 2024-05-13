@@ -113,15 +113,10 @@ export default class AuthController {
 			}
 		}
 
+		const files = req.files ? mapFiles(req.files) : undefined;
+
 		try {
-			await sendMail(
-				target,
-				replyTo,
-				subject,
-				emailBody,
-				req.body.to,
-				req.files ? mapFiles(req.files) : undefined,
-			);
+			await sendMail(target, replyTo, subject, emailBody, req.body.to, files);
 		} catch (e) {
 			if (target.error_redirect) {
 				return res.redirect(getRedirectUrl(req, target.error_redirect));

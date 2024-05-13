@@ -1,54 +1,40 @@
 <script lang="ts">
-	import Box from "$lib/Box.svelte";
-	import Button from "$lib/Button.svelte";
-	import Status from "$lib/Status.svelte";
-	import { type ITarget, ETargetStatus, EDatabaseBoolean } from "$lib/types";
-	import axios from "axios";
-	import { CircleCheck, CircleMinus, FileCode2, FileUp, KeyRound, RadioTower } from "lucide-svelte";
 	import { onMount } from "svelte";
+	import TargetsTable from "./TargetsTable.svelte";
+	import type { ITarget } from "$lib/types";
+	import axios from "axios";
+	import * as Card from "$lib/components/ui/card/index";
+	import Button from "$lib/components/ui/button/button.svelte";
+	import { goto } from "$app/navigation";
+	import { Plus } from "lucide-svelte";
+	import { logOut } from "$lib/axios";
 
-	let targets: ITarget[] = []
+	let targets: ITarget[] = [];
 
 	onMount(async () => {
 		const res = await axios.get<ITarget[]>("/targets");
 		targets = res.data;
-	})
+	});
 </script>
-<Box>
-	<Button href="/targets/add">
-		Add new target
-	</Button>
-	<table cellspacing="0">
-		<tr>
-			<th><RadioTower /></th>
-			<th>Name</th>
-			<th>From</th>
-			<th><KeyRound /></th>
-			<th><FileUp /></th>
-			<th><FileCode2 /></th>
-		</tr>
-		
-		{#each targets as target}
-			<tr>
-				<td>
-					<Status status={target.status === ETargetStatus.ENABLED} />
-				</td>
-				<td>{target.name}</td>
-				<td>{target.from}</td>
-				<td>
-					<Status status={Boolean(target.api_key)} />
-				</td>
-				<td>
-					<Status status={target.allow_files === EDatabaseBoolean.TRUE} />
-				</td>
-				<td>
-					<Status status={target.allow_templates === EDatabaseBoolean.TRUE} />
-				</td>
-			</tr>
-		{/each}
-	</table>
-</Box>
 
-<style lang="scss">
-	@import "../../scss/table.scss";
-</style>
+<Card.Root>
+	<Card.Header>
+		<Card.Title>Targets</Card.Title>
+		<Card.Description>
+			These are your endpoints for sending e-mails each with its own smtp and configuration
+		</Card.Description>
+	</Card.Header>
+	<Card.Content class="grid gap-4">
+		<section>
+			<Button on:click={() => goto("/targets/add")} variant="secondary">
+				<Plus class="mr-2" />
+				Create new target
+			</Button>
+		</section>
+		{#if targets.length}
+			<section class="rounded border">
+				<TargetsTable data={targets} />
+			</section>
+		{/if}
+	</Card.Content>
+</Card.Root>
