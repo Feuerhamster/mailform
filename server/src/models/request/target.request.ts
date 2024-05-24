@@ -1,4 +1,4 @@
-import { ECaptchaProvider, EDatabaseBoolean } from "$models/database.js";
+import { ECaptchaProvider, EDatabaseBoolean, ETargetStatus } from "$models/database.js";
 import { RequestBody } from "$models/request.js";
 import {
 	IsArray,
@@ -30,9 +30,17 @@ export class TargetAdd extends RequestBody {
 	@IsEmail({}, { each: true })
 	recipients!: string[];
 
-	@IsString()
 	@IsOptional()
+	@IsEnum(ETargetStatus)
+	status?: ETargetStatus;
+
+	@IsOptional()
+	@IsString()
 	origin?: string;
+
+	@IsOptional()
+	@IsString()
+	api_key?: string;
 
 	@IsOptional()
 	@IsEnum(EDatabaseBoolean)
@@ -41,6 +49,10 @@ export class TargetAdd extends RequestBody {
 	@IsOptional()
 	@IsEnum(EDatabaseBoolean)
 	allow_templates?: EDatabaseBoolean;
+
+	@IsOptional()
+	@IsEnum(EDatabaseBoolean)
+	allow_custom_recipients?: EDatabaseBoolean;
 
 	@IsEmail()
 	from!: string;
@@ -114,6 +126,13 @@ export class ExecuteTarget extends RequestBody {
 	@IsOptional()
 	@IsObject()
 	templateData?: Object;
+
+	@IsOptional()
+	@IsArray()
+	@IsString({ each: true })
+	@IsNotEmpty({ each: true })
+	@IsEmail({}, { each: true })
+	to?: string[];
 
 	@IsOptional()
 	@IsString()

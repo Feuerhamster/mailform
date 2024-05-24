@@ -2,7 +2,6 @@ import { Server } from "@overnightjs/core";
 import express from "express";
 import { Server as HttpServer } from "http";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 import { config } from "$services/config.service.js";
 import { errorFunctionMiddleware } from "$middlewares/errorFunction.middleware.js";
 
@@ -13,8 +12,8 @@ export default class MailformServer extends Server {
 		super(process.env.NODE_ENV === "development");
 
 		this.app.set("trust proxy", config.proxy);
-		this.app.use(cookieParser());
 		this.app.use(express.json());
+		this.app.use(cors());
 		this.app.use(errorFunctionMiddleware);
 		this.setupControllers();
 	}

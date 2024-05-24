@@ -21,7 +21,7 @@ import { formatFromField } from "$utils/formatFromField.util.js";
 import { mapFiles, sendMail } from "$services/email.service.js";
 import multer from "multer";
 import { TargetUpdate } from "$models/database";
-import { renderTemplate } from "$services/template.service";
+import { renderTemplate } from "$services/template.service.js";
 
 const upload = multer({ dest: "./attatchment-uploads/" });
 
@@ -78,12 +78,17 @@ export default class AuthController {
 	@Post(":targetId/execute")
 	@Middleware(upload.any())
 	@Middleware(validate(ExecuteTarget))
+	@Middleware(upload.any())
+	@Middleware(validate(ExecuteTarget))
 	public async executeTarget(
 		req: IRequest<ExecuteTarget, {}, { targetId: string }>,
 		res: IResponse,
 	) {
 		const handled = await targetPreHandler(req, res);
+		const handled = await targetPreHandler(req, res);
 
+		if (handled !== true) {
+			return;
 		if (handled !== true) {
 			return;
 		}
@@ -113,14 +118,10 @@ export default class AuthController {
 			}
 		}
 
+		const files = req.files ? mapFiles(req.files) : undefined;
+
 		try {
-			await sendMail(
-				target,
-				replyTo,
-				subject,
-				emailBody,
-				req.files ? mapFiles(req.files) : undefined,
-			);
+			await sendMail(target, replyTo, subject, emailBody, req.body.to, files);
 		} catch (e) {
 			if (target.error_redirect) {
 				return res.redirect(getRedirectUrl(req, target.error_redirect));

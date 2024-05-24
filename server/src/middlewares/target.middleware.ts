@@ -4,7 +4,7 @@ import { StatusCode } from "$types/httpStatusCodes.js";
 import getRedirectUrl from "$utils/redirect.util.js";
 import { IRequest, IResponse } from "express";
 import { createHash } from "crypto";
-import { ETargetAllowFiles, ETargetStatus } from "$models/database.js";
+import { EDatabaseBoolean, ETargetStatus } from "$models/database.js";
 
 export async function targetPreHandler(
 	req: IRequest<unknown, unknown, { targetId: string }>,
@@ -33,7 +33,7 @@ export async function targetPreHandler(
 	}
 
 	// Check files
-	if (target.allowFiles === ETargetAllowFiles.FALSE && req.files) {
+	if (target.allow_files === EDatabaseBoolean.FALSE && req.files) {
 		if (target.error_redirect) {
 			return res.redirect(getRedirectUrl(req, target.error_redirect));
 		}

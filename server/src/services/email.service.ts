@@ -49,6 +49,7 @@ export async function sendMail(
 	replyTo: string,
 	subject: string,
 	body: string,
+	to: string[] = [],
 	files?: Express.Multer.File[],
 ): Promise<boolean | Error> {
 	const transporter = nodemailer.createTransport(target.smtp);
@@ -56,7 +57,7 @@ export async function sendMail(
 	let mail: Mail.Options = {
 		from: target.from,
 		replyTo,
-		to: target.recipients,
+		to: [...target.recipients, ...to],
 		subject,
 		html: body,
 	};

@@ -1,4 +1,4 @@
-import { Controller, Middleware, Get, Post, Delete, Patch, Put } from "@overnightjs/core";
+import { Controller, Middleware, Get, Post, Delete, Put } from "@overnightjs/core";
 import { IRequest, IResponse } from "express";
 import authenticate from "$middlewares/auth.middleware.js";
 import {
@@ -10,8 +10,7 @@ import {
 import validate, { validateOptional } from "$middlewares/validation.middleware.js";
 import { StatusCode } from "$types/httpStatusCodes.js";
 import { TemplateAdd } from "$models/request/template.request.js";
-import { Liquid } from "liquidjs";
-import { validateTemplateSyntax } from "$services/template.service";
+import { validateTemplateSyntax } from "$services/template.service.js";
 
 @Controller("templates")
 export default class AuthController {

@@ -1,23 +1,41 @@
-<script>
-	import Button from "./Button.svelte";
+<script lang="ts">
+	import { page } from "$app/stores";
+	import { logOut } from "./axios";
+	import Button from "./components/ui/button/button.svelte";
 
-</script>
-<header>
-	<h1>Mailform</h1>
-</header>
+	const links = [
+		{
+			href: "/targets",
+			name: "Targets",
+		},
+		{
+			href: "/templates",
+			name: "Templates",
+		},
+	];
 
-<style lang="scss">
-	header {
-		display: flex;
-		background-color: var(--color-block);
-		padding: var(--default-padding-element);
-		border-bottom: 1px solid var(--color-block-accent);
-
-		h1 {
-			margin: 0;
-			font-weight: 500;
-			font-size: 1.4rem;
-			flex: 1;
+	function active(href: string) {
+		if ($page.url.pathname.startsWith(href)) {
+			return "text-white underline";
 		}
 	}
-</style>
+</script>
+
+<header class="sticky top-0 flex items-center gap-8 border-b bg-background px-4 py-3">
+	<h1 class="text-lg font-bold">
+		<a href="/">Mailform</a>
+	</h1>
+	<nav class="flex flex-1 items-center gap-4">
+		{#each links as link}
+			{#key $page.url.pathname}
+				<a
+					href={link.href}
+					class="text-gray-400 transition-colors hover:text-white {active(link.href)}"
+				>
+					{link.name}
+				</a>
+			{/key}
+		{/each}
+	</nav>
+	<Button variant="secondary" size="sm" on:click={logOut}>Log out</Button>
+</header>
