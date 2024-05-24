@@ -1,17 +1,21 @@
-<button on:click>
+<button {...$$restProps} on:click>
 	<slot />
 </button>
 
 <style lang="scss">
 	button {
-		background-color: var(--color-primary);
-		font-family: inherit;
-		font-size: 1rem;
-		border: none;
-		border-radius: var(--default-border-radius);
+		font-size: inherit;
 		color: inherit;
-		padding: 4px 12px;
-		border: 1px solid var(--color-primary-accent);
+		border-radius: 8px;
+		border: 2px solid transparent;
+		padding: 8px 14px;
+		background-color: var(--color-primary);
 		cursor: pointer;
+
+		transition: background 0.2s;
+
+		&:hover {
+			background-color: var(--color-primary-accent);
+		}
 	}
 </style>

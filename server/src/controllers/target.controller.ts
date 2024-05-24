@@ -85,10 +85,7 @@ export default class AuthController {
 		res: IResponse,
 	) {
 		const handled = await targetPreHandler(req, res);
-		const handled = await targetPreHandler(req, res);
 
-		if (handled !== true) {
-			return;
 		if (handled !== true) {
 			return;
 		}

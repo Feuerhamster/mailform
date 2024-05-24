@@ -1,17 +1,25 @@
-<section>
+<article>
+	{#if $$slots.header}
+		<header>
+			<slot name="header" />
+		</header>
+	{/if}
 	<slot />
-</section>
+</article>
 
 <style lang="scss">
-	section {
+	article {
+		border-radius: 8px;
+		background-color: var(--color-block);
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: var(--default-padding-element);
-		background-color: var(--color-block);
-		padding: var(--default-padding-element);
-		border-bottom: 1px solid var(--color-block-accent);
-		border-radius: var(--default-border-radius);
+		gap: 1rem;
+		padding: 16px 20px;
+
+		header {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+		}
 	}
 </style>

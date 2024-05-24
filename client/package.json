@@ -12,20 +12,12 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
-		"@tailwindcss/typography": "^0.5.10",
-		"autoprefixer": "^10.4.16",
-		"postcss": "^8.4.33",
 		"prettier": "^3.1.1",
-		"prettier-plugin-svelte": "^3.1.2",
-		"prettier-plugin-tailwindcss": "^0.5.1",
 		"svelte": "^4.2.7",
 		"svelte-check": "^3.6.0",
-		"svelte-headless-table": "^0.18.2",
-		"tailwindcss": "^3.4.1",
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.0",
 		"vite": "^5.0.3"
@@ -36,13 +28,7 @@
 		"@fontsource/lexend": "^5.0.20",
 		"@types/js-cookie": "^3.0.6",
 		"axios": "^1.6.8",
-		"bits-ui": "^0.21.7",
-		"clsx": "^2.1.1",
 		"lucide-svelte": "^0.378.0",
-		"mode-watcher": "^0.3.0",
-		"sass": "^1.76.0",
-		"svelte-sonner": "^0.3.24",
-		"tailwind-merge": "^2.3.0",
-		"tailwind-variants": "^0.2.1"
+		"sass": "^1.76.0"
 	}
 }

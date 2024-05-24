@@ -2,21 +2,61 @@
 	import "../app.css";
 	import "@fontsource/atkinson-hyperlegible";
 	import Login from "./Login.svelte";
+	import Toasts from "./Toasts.svelte";
 	import { authorizationKey } from "$lib/stores";
-	import "$lib/axios";
-	import { Toaster } from "$lib/components/ui/sonner";
-	import Navbar from "$lib/Navbar.svelte";
+	import "$lib/axios";import Navbar from "$lib/Navbar.svelte";
+;
 </script>
 
-{#if $authorizationKey}
-	<Navbar />
-	<div class="flex flex-col items-center gap-8 p-8">
+<main>
+	{#if $authorizationKey}
+		<Navbar />
 		<slot></slot>
-	</div>
-{:else}
-	<div class="flex min-h-screen items-center justify-center">
-		<Login></Login>
-	</div>
-{/if}
+	{:else}
+		<section class="center">
+			<Login></Login>
+		</section>
+	{/if}
 
-<Toaster position="bottom-center" />
+</main>
+
+<Toasts />
+
+<style lang="scss">
+	@import "../scss/colors.scss";
+
+	:global(*) {
+		box-sizing: border-box;
+	}
+
+	:global(html) {
+		font-family: "Atkinson Hyperlegible", sans-serif;
+		font-size: 18px;
+		color: var(--color-text);
+	}
+
+	:global(body) {
+		margin: 0;
+		min-height: 100vh;
+		background-color: var(--color-bg);
+	}
+
+	main {
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		padding: 8px;
+		align-items: center;
+	}
+
+	section {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+
+		&.center {
+			align-items: center;
+			justify-content: center;
+		}
+	}
+</style>
