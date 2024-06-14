@@ -20,6 +20,14 @@ export const postBody = {
             maximum: 100
         }
     },
+    subjectPrefix: {
+        type: "string",
+        presence: false,
+        length: {
+            minimum: 1,
+            maximum: 255
+        }
+    },
     subject: {
         type: "string",
         presence: { allowEmpty: false },

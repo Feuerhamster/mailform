@@ -19,25 +19,21 @@ export const targetModel = {
         type: "string",
         presence: false
     },
+    subjectPrefix: {
+        type: "string",
+        presence: false
+    },
     redirect: {
         type: "object",
         presence: false
     },
     "redirect.success": {
         type: "string",
-        presence: false,
-        url: {
-            schemes: ["http", "https"],
-            allowLocal: true
-        }
+        presence: false
     },
     "redirect.error": {
         type: "string",
-        presence: false,
-        url: {
-            schemes: ["http", "https"],
-            allowLocal: true
-        }
+        presence: false
     },
     key: {
         type: "string",
