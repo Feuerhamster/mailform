@@ -1,15 +1,50 @@
 import {NextFunction, Request, Response, Router} from "express";
 import formidable from "formidable";
 import {TargetManager} from "./services/targetManager";
-import {Target} from "./@types/target";
+import {ContactForm, Target} from "./@types/target";
 import {RateLimiter} from "./services/rateLimiter";
 import validate from "./services/validate";
 import {postBody} from "./models/post";
 import {EmailService} from "./services/email";
 import {CaptchaService} from "./services/captcha";
 import getRedirectUrl from "./util/redirect";
+import {HttpStatusCode} from "axios";
+import {PipedriveService} from "./services/pipedrive";
 
 const router: Router = Router();
+
+router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
+    try {
+        // if (!(await RateLimiter.consume(req.params.target, req.ip))) {
+        //     return res.status(429).end();
+        // }
+        console.info("[POST] /api/v1/contact-form");
+        const form = formidable({});
+        form.parse(req, async (err, fields, _) => {
+            if (err) {
+                return res.status(500).send({message: "Parse Error"}).end();
+            }
+            const service = new PipedriveService();
+            let data: ContactForm;
+
+            try {
+                data = service.validateContactForm(fields);
+            } catch (e: any) {
+                res.status(HttpStatusCode.BadRequest).json({message: (e as Error).message});
+            }
+
+            const response = await service.createLead(data);
+            console.info(`response form createLead -> ${JSON.stringify(response)}`);
+
+            if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
+            else res.status(HttpStatusCode.BadRequest).json(response);
+        });
+    } catch (e: any) {
+        console.error("[POST] /api/v1/contact-form -> ERROR: unhandled exception ist happened")
+        console.error(e)
+        res.status(HttpStatusCode.InternalServerError).json(e);
+    }
+});
 
 /**
  * Check if target exist, validate origin and send CORS headers.

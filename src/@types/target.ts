@@ -29,3 +29,15 @@ export enum CaptchaProvider {
     RECAPTCHA = "recaptcha",
     HCAPTCHA = "hcaptcha"
 }
+
+export type Language = "GERMAN" | "ENGLISH" | "FRANCE" | "ITALY" | "SPAIN";
+
+export interface ContactForm {
+    firstname: string,
+    lastname: string,
+    org: string, 
+    email: string,
+    phone?: string,
+    msg?: string,
+    language: Language,
+}

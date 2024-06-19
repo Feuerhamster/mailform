@@ -5,7 +5,9 @@
         "sourceMap": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
-        "outDir": "dist"
+        "outDir": "dist",
+        "allowSyntheticDefaultImports": true
+        
     },
     "exclude": [
         "node_modules"
