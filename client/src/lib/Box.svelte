@@ -14,7 +14,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		padding: 16px 20px;
+		padding: 16px;
 
 		header {
 			display: flex;

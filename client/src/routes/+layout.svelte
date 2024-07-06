@@ -1,17 +1,20 @@
 <script>
-	import "../app.css";
 	import "@fontsource/atkinson-hyperlegible";
 	import Login from "./Login.svelte";
 	import Toasts from "./Toasts.svelte";
 	import { authorizationKey } from "$lib/stores";
-	import "$lib/axios";import Navbar from "$lib/Navbar.svelte";
+	import "$lib/axios";
+	import Navbar from "$lib/Navbar.svelte";
+	import Sidebar from "$lib/Sidebar.svelte";
 ;
 </script>
 
 <main>
 	{#if $authorizationKey}
-		<Navbar />
-		<slot></slot>
+		<Sidebar />
+		<section>
+			<slot />
+		</section>
 	{:else}
 		<section class="center">
 			<Login></Login>
@@ -43,16 +46,15 @@
 
 	main {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		min-height: 100vh;
-		padding: 8px;
-		align-items: center;
 	}
 
 	section {
 		display: flex;
 		flex-direction: column;
 		flex: 1;
+		padding: 1rem 1.2rem;
 
 		&.center {
 			align-items: center;
