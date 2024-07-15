@@ -4,3 +4,4 @@ dist
 .vs
 targets/*.json
 .env
+.vscode

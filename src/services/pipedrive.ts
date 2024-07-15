@@ -1,8 +1,20 @@
-import { ApiClient, LeadsApi, PersonsApi, OrganizationsApi, AddLeadRequest, NewPerson, NewOrganization } from 'pipedrive'
-import { v4 as uuidv4 } from 'uuid';
+import {
+    ApiClient,
+    LeadsApi,
+    PersonsApi,
+    PersonFieldsApi,
+    OrganizationsApi,
+    AddLeadRequest,
+    NewPerson,
+    NewOrganization,
+    //@ts-ignore
+} from "pipedrive";
+import {v4 as uuidv4} from "uuid";
 
 import "dotenv/config";
-import {ContactForm, Language} from "../@types/target";
+import {ContactForm} from "../@types/target";
+import {PipedrivePersonService} from "./pipedrive/person";
+import {LANGUAGE_MAPPER} from "./pipedrive/language-mapper";
 
 const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const LEAD_LABEL_ID = "74b21c90-f326-11ed-98c5-c58df5a19268";
@@ -11,45 +23,34 @@ const apiClient = new ApiClient();
 const apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
 
-const LANGUAGE_MAPPER: {[key in Language]: number} = {
-    "GERMAN": 88,
-    "ENGLISH": 89,
-    "FRANCE": 90,
-    "ITALY": 92,
-    "SPAIN": 91
-}
-
 export class PipedriveService {
     leadClient = new LeadsApi(apiClient);
     personClient = new PersonsApi(apiClient);
+    personFiledClient = new PersonFieldsApi(apiClient);
     organizationClient = new OrganizationsApi(apiClient);
 
     validateContactForm(data: any): ContactForm {
         if (data.firstname === null) throw new Error("firstname is empty");
-        if (data.lastname === null) throw new Error("lastname is empty")
+        if (data.lastname === null) throw new Error("lastname is empty");
         if (data.org === null) throw new Error("org is empty");
         if (data.email === null) throw new Error("email is empty");
-        const validLanguages: ContactForm["language"][] = ["GERMAN", "ENGLISH", "FRANCE", "ITALY", "SPAIN"];
-        if (!validLanguages.includes(data.language)) throw new Error("not supported language");
-
-        return data as ContactForm
+        return data as ContactForm;
     }
 
     async createLead(req: ContactForm): Promise<Response> {
-        console.info(`PipedriveService -> createLead -> for ${req.firstname} ${req.email}`)
+        console.info(`PipedriveService -> createLead -> for ${req.firstname} ${req.email}`);
         const addPerReq = await this.addPerson(req);
         if (!addPerReq.success) return addPerReq;
-        const person_id: number | null = addPerReq.data.id;
+        const person_id: number = (addPerReq.data as any).id;
 
         const addOrgReq = await this.addOrganization(req, person_id);
-        if(!addOrgReq.success) return addOrgReq;
-        const organization_id: number | null = addOrgReq.data.id
+        if (!addOrgReq.success) return addOrgReq;
+        const organization_id: number | null = addOrgReq.data.id;
 
-
-        if(!person_id || !organization_id) throw new Error("peron_id or organization_id are null")
-        return await this.addLead(person_id, organization_id)
+        if (!person_id || !organization_id) throw new Error("peron_id or organization_id are null");
+        return await this.addLead(person_id, organization_id);
     }
-    
+
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/LeadsApi.md#addLead
     private async addLead(person_id: number, organization_id: number): Promise<Response> {
         const origin_id = `fidentity_backend_${uuidv4()}`;
@@ -81,27 +82,35 @@ export class PipedriveService {
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
     private async addPerson(req: ContactForm) {
+        const service = new PipedrivePersonService();
+        const personResponse = await service.addSimplePerson(this.personClient, req, PIPEDRIVE_INFO_ACC_ID);
+        const language = service.getLang(req);
+        if (language !== null) {
+            const checkPersonFiledResponse = await service.checkLanguage(this.personFiledClient);
+            const addLanguageForPersonResponse = await service.addLanguageForPerson(this.personClient, req, 1234);
+        }
+        return personResponse;
+    }
+
+
+
+    // https://github.com/pipedrive/client-nodejs/blob/master/docs/OrganizationsApi.md#addOrganization
+    private async addOrganization(req: ContactForm, person_id: number) {
         const origin_id = `fidentity_backend_${uuidv4()}`;
-        console.info(`PipedriveService -> addPerson -> send a addPerson request to Pipedrive, origin_id: ${origin_id}`);
+        console.info(
+            `PipedriveService -> addOrganization -> send a addLead request to Pipedrive, origin_id: ${origin_id}`
+        );
 
-        console.debug(req)
-
-        const opts = NewPerson.constructFromObject({
-            name: `${req.firstname} ${req.lastname}`,
+        const opts = NewOrganization.constructFromObject({
+            name: req.org,
+            add_time: getCurrentUTCDateTime(),
             owner_id: PIPEDRIVE_INFO_ACC_ID,
-            // email: {
-            //     value: req.email,
-            // },
-            // phone: {
-            //     value: req.phone,
-            // },
-            // add_time: this.getCurrentUTCDateTime(),
         });
-        console.debug("debuguguguasjdgaklsdjga")
 
-        const response = await this.personClient.addPerson(opts);
-        console.info(`PipedriveService -> addPerson -> received response: ${JSON.stringify(response)}`)
-        return response.success === true
+        const response = await this.organizationClient(opts);
+
+        console.info(`PipedriveService -> addOrganization -> received response: ${JSON.stringify(response)}`);
+        return response.success == true
             ? {
                   success: true,
                   data: response.data,
@@ -110,47 +119,20 @@ export class PipedriveService {
             : {
                   success: false,
                   error: new Error(response.data),
-                  msg: "Request goes wrong -> add Persona",
+                  msg: "Request goes wrong -> add Organization",
               };
-    }
-
-    // https://github.com/pipedrive/client-nodejs/blob/master/docs/OrganizationsApi.md#addOrganization
-    private async addOrganization(req: ContactForm, person_id: number) {
-        const origin_id = `fidentity_backend_${uuidv4()}`;
-        console.info(`PipedriveService -> addOrganization -> send a addLead request to Pipedrive, origin_id: ${origin_id}`);
-
-        const opts = NewOrganization.constructFromObject({
-            name: req.org,
-            add_time: this.getCurrentUTCDateTime(),
-            owner_id: PIPEDRIVE_INFO_ACC_ID
-
-        });
-
-        const response = await this.organizationClient(opts);
-
-        console.info(`PipedriveService -> addOrganization -> received response: ${JSON.stringify(response)}`)
-        return response.success == true ?
-        {
-            success: true,
-            data: response.data,
-            msg: "Everything is okay",
-        }:{
-            success: false,
-            error: new Error(response.data),
-            msg: "Request goes wrong -> add Organization",
-        }
-    }
-
-    private getCurrentUTCDateTime(): string {
-        const now = new Date();
-        const isoString = now.toISOString(); // e.g., "2024-06-17T13:47:00.000Z"
-        const datePart = isoString.split("T")[0]; // "2024-06-17"
-        const timePart = isoString.split("T")[1].split(".")[0]; // "13:47:00"
-        return `${datePart} ${timePart}`;
     }
 }
 
-function getRequiredEnvVariable(varName: string): string {
+export function getCurrentUTCDateTime(): string {
+    const now = new Date();
+    const isoString = now.toISOString(); // e.g., "2024-06-17T13:47:00.000Z"
+    const datePart = isoString.split("T")[0]; // "2024-06-17"
+    const timePart = isoString.split("T")[1].split(".")[0]; // "13:47:00"
+    return `${datePart} ${timePart}`;
+}
+
+export function getRequiredEnvVariable(varName: string): string {
     const value = process.env[varName];
     if (!value) {
         throw new Error(`now env found for ${varName}`);
@@ -158,9 +140,9 @@ function getRequiredEnvVariable(varName: string): string {
     return value;
 }
 
-interface Response {
+export interface Response<T = unknown> {
     success: boolean;
-    data?: unknown;
+    data?: T;
     error?: Error;
     msg?: string;
 }
