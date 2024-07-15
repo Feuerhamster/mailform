@@ -5,7 +5,6 @@ import {
     PersonFieldsApi,
     OrganizationsApi,
     AddLeadRequest,
-    NewPerson,
     NewOrganization,
     //@ts-ignore
 } from "pipedrive";
@@ -14,7 +13,6 @@ import {v4 as uuidv4} from "uuid";
 import "dotenv/config";
 import {ContactForm} from "../@types/target";
 import {PipedrivePersonService} from "./pipedrive/person";
-import {LANGUAGE_MAPPER} from "./pipedrive/language-mapper";
 
 const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const LEAD_LABEL_ID = "74b21c90-f326-11ed-98c5-c58df5a19268";
@@ -47,7 +45,7 @@ export class PipedriveService {
         if (!addOrgReq.success) return addOrgReq;
         const organization_id: number | null = addOrgReq.data.id;
 
-        if (!person_id || !organization_id) throw new Error("peron_id or organization_id are null");
+        if (!person_id || !organization_id) throw new Error("person_id or organization_id are null");
         return await this.addLead(person_id, organization_id);
     }
 
@@ -81,18 +79,22 @@ export class PipedriveService {
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
-    private async addPerson(req: ContactForm) {
-        const service = new PipedrivePersonService();
-        const personResponse = await service.addSimplePerson(this.personClient, req, PIPEDRIVE_INFO_ACC_ID);
-        const language = service.getLang(req);
-        if (language !== null) {
+    private async addPerson(req: ContactForm): Promise<{ success: boolean }> {
+        try {
+            const service = new PipedrivePersonService();
+            const personResponse = await service.addSimplePerson(this.personClient, req, PIPEDRIVE_INFO_ACC_ID);
+            if(!personResponse.success) throw (personResponse.error as Error)
             const checkPersonFiledResponse = await service.checkLanguage(this.personFiledClient);
+            if(!checkPersonFiledResponse.success) throw (checkPersonFiledResponse.error as Error)
             const addLanguageForPersonResponse = await service.addLanguageForPerson(this.personClient, req, 1234);
+            if(!addLanguageForPersonResponse.success) throw (addLanguageForPersonResponse.error as Error)
+            return {success: true};
+        } catch(error) {
+            const ex = error as any as Error
+            console.error(ex.message)
+            return {success: false};
         }
-        return personResponse;
     }
-
-
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/OrganizationsApi.md#addOrganization
     private async addOrganization(req: ContactForm, person_id: number) {
