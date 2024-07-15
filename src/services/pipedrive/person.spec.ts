@@ -4,19 +4,18 @@ import {Field, LANGUAGE_KEY, LANGUAGE_MAP, LanguageKey, PipedrivePersonService} 
 import {getRequiredEnvVariable} from "../pipedrive";
 import {ContactForm} from "../../@types/target";
 import {LANGUAGE_MAPPER} from "./language-mapper";
-import { response } from "express";
 
 type pipedriveResponse = {success: boolean; data: unknown}
 
 describe("PipeDrive API Person Test", () => {
     let personClient: any;
     let personFieldClient: any;
-    let personIdsToRemove: number[] = [];
+    const personIdsToRemove: number[] = [];
     const service = new PipedrivePersonService();
     const PIPEDRIVE_INFO_ACC_ID = 13_132_618;
 
     beforeAll(async () => {
-        console.log("Create ApiClient and PersonApiClient");
+        console.info("beforeAll -> Create ApiClient and PersonApiClient");
         const apiClient = new ApiClient();
         apiClient.authentications.api_key.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
         personClient = new PersonsApi(apiClient);
@@ -26,22 +25,22 @@ describe("PipeDrive API Person Test", () => {
     afterAll(async () => {
         const deleteResponses: pipedriveResponse[] = [];
         if (personIdsToRemove.length !== 0) {
-            console.info(`AfterAll -> Delete created Users: ${personIdsToRemove}`);
+            console.info(`afterAll -> Delete created Users: ${personIdsToRemove}`);
             
             for (const id of personIdsToRemove) {
                 try {
                     const response = (await personClient.deletePerson(id)) as pipedriveResponse;
-                    console.info(`AfterAll -> Delete User response: ${JSON.stringify(response)}`);
+                    console.info(`afterAll -> Delete User response: ${JSON.stringify(response)}`);
                     deleteResponses.push(response);
                 } catch (error) {
-                    console.error(`Failed to delete user with ID ${id}: ${(error as any).message}`);
+                    console.error(`afterAll -> Failed to delete user with ID ${id}: ${(error as any).message}`);
                 }
             }
         }
     
         for (const resp of deleteResponses) {
             if (!resp.data) {
-                console.error(JSON.stringify(resp.data));
+                console.error(`afterAll -> ${JSON.stringify(resp.data)}`);
             }
             expect(resp.success).toBe(true);  // Ensure this matches your testing framework's syntax
         }
@@ -55,7 +54,7 @@ describe("PipeDrive API Person Test", () => {
         expect((response.data as any).id).not.toBeNull();
         expect((response.data as any).phone[0].value == "0792223344");
         expect((response.data as any).email[0].value == "API-JEST-TEST-email");
-        // pipedrivePersonIds.push(response.data.id)
+        personIdsToRemove.push((response.data as any).id)
     });
 
     it("should add a new person and add the language to the person", async () => {
@@ -79,7 +78,6 @@ describe("PipeDrive API Person Test", () => {
 
     it("should check pipedrive has a valid Language Field", async () => {
         const response = await service.checkLanguage(personFieldClient);
-        console.info(JSON.stringify(response));
         expect(response.success).toBeTruthy();
         expect(response.data?.id).toBe(9099);
         expect(response.data?.key).toBe(LANGUAGE_KEY);
@@ -101,12 +99,12 @@ describe("PipeDrive API Person Test", () => {
                 },
             ],
         };
-        // let wrongResult = service.validateField(data);
-        // expect(wrongResult).toBeFalsy();
+        let wrongResult = service.validateField(data);
+        expect(wrongResult).toBeFalsy();
 
         data.key = "bab84189617691c8d2549a1331ad7d8ceca26653";
-        // wrongResult = service.validateField(data);
-        // expect(wrongResult).toBeFalsy();
+        wrongResult = service.validateField(data);
+        expect(wrongResult).toBeFalsy();
 
         data.options = [
             {
@@ -138,7 +136,6 @@ describe("PipeDrive API Person Test", () => {
         for (const key in LANGUAGE_MAPPER) {
             const language = LANGUAGE_MAPPER[key as LanguageKey];
 
-            console.debug(`Test Language: ${JSON.stringify(language)}`);
 
             expect(language.germanName).not.toBeNull;
             expect(["Deutsch", "Englisch", "Französisch", "Spanisch", "Italienisch"]).toContain(language.germanName);

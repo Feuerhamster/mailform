@@ -119,7 +119,7 @@ export class PipedrivePersonService {
         const failMsg = "Request goes wrong -> no valid Language Field exists";
         const response = await client.getPersonField(LANGUAGE_FILED_ID);
         if (response.success) {
-            console.log(response.data);
+            console.info(`checkLanguage -> getPersonField response: ${JSON.stringify(response)}`);
             const langField = response.data as Field;
             const isValid = this.validateField(response.data as Field);
             return {
