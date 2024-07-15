@@ -1,4 +1,5 @@
-import { LanguageKey } from "../services/pipedrive/person";
+import { LanguageKey } from "../services/pipedrive/types";
+
 
 export interface Target {
     smtp: string;
@@ -31,8 +32,6 @@ export enum CaptchaProvider {
     RECAPTCHA = "recaptcha",
     HCAPTCHA = "hcaptcha"
 }
-
-// export type Language = "GERMAN" | "ENGLISH" | "FRANCE" | "ITALY" | "SPAIN";
 
 export interface ContactForm {
     firstname: string,
