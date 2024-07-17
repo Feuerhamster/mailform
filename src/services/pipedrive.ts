@@ -13,6 +13,8 @@ import {v4 as uuidv4} from "uuid";
 import "dotenv/config";
 import {ContactForm} from "../@types/target";
 import {PipedrivePersonService} from "./pipedrive/person";
+import {AddPerson, PersonItem, Response} from "./pipedrive/types";
+import {preProcessFile} from "typescript";
 
 const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const LEAD_LABEL_ID = "74b21c90-f326-11ed-98c5-c58df5a19268";
@@ -79,20 +81,59 @@ export class PipedriveService {
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
-    private async addPerson(req: ContactForm): Promise<{ success: boolean }> {
+    private async addPerson(req: ContactForm): Promise<Response<AddPerson>> {
         try {
             const service = new PipedrivePersonService();
+            const returnData: AddPerson = {};
             const personResponse = await service.addSimplePerson(this.personClient, req, PIPEDRIVE_INFO_ACC_ID);
-            if(!personResponse.success) throw (personResponse.error as Error)
-            const checkPersonFiledResponse = await service.checkLanguage(this.personFiledClient);
-            if(!checkPersonFiledResponse.success) throw (checkPersonFiledResponse.error as Error)
-            const addLanguageForPersonResponse = await service.addLanguageForPerson(this.personClient, req, 1234);
-            if(!addLanguageForPersonResponse.success) throw (addLanguageForPersonResponse.error as Error)
-            return {success: true};
-        } catch(error) {
-            const ex = error as any as Error
-            console.error(ex.message)
-            return {success: false};
+
+            if (!personResponse.success) throw personResponse.error as Error;
+            returnData.addSimplePersonResponse = personResponse;
+            const personId = personResponse.data?.id;
+            if (!personId) throw new Error("The new created person has no personId");
+
+            try {
+                const checkPersonLangFiledResponse = await service.checkLanguage(this.personFiledClient);
+                returnData.personLangFieldResponse = checkPersonLangFiledResponse;
+                if (!checkPersonLangFiledResponse.success) throw checkPersonLangFiledResponse.error as Error;
+                const addLanguageForPersonResponse = await service.addLanguageForPerson(
+                    this.personClient,
+                    req,
+                    personId
+                );
+                returnData.addLanguageForPersonResponse = addLanguageForPersonResponse;
+                if (!addLanguageForPersonResponse.success) throw addLanguageForPersonResponse.error as Error;
+            } catch (error) {
+                console.warn(
+                    `We cant add the Language for the Person with ID: ${personId}, because: ${(error as Error).message}`
+                );
+            }
+
+            try {
+                const checkPersonLabelFiledResponse = await service.checkLabelId(service);
+                if (!checkPersonLabelFiledResponse.success) throw checkPersonLabelFiledResponse.error as Error;
+                const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(service, personId);
+                if (!addInboundLabelToPersonResponse.success) throw addInboundLabelToPersonResponse.error;
+            } catch (error) {
+                console.warn(
+                    `We can't add the Inbound Form Label for Person with ID: ${personId}, because: ${
+                        (error as Error).message
+                    }`
+                );
+            }
+
+            return {
+                success: true,
+                data: returnData,
+                msg: "Successfully added a new People with all attributes",
+            };
+        } catch (error) {
+            const ex = error as any as Error;
+            console.error(ex.message);
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+            };
         }
     }
 
@@ -140,11 +181,4 @@ export function getRequiredEnvVariable(varName: string): string {
         throw new Error(`now env found for ${varName}`);
     }
     return value;
-}
-
-export interface Response<T = unknown> {
-    success: boolean;
-    data?: T;
-    error?: Error;
-    msg?: string;
 }

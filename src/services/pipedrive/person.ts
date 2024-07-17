@@ -2,7 +2,7 @@
 import {NewPerson} from "pipedrive";
 import {ContactForm} from "../../@types/target";
 import {v4 as uuidv4} from "uuid";
-import {getCurrentUTCDateTime, Response} from "../pipedrive";
+import {getCurrentUTCDateTime} from "../pipedrive";
 import {LANGUAGE_MAPPER} from "./language-mapper";
 import {
     LanguageKey,
@@ -11,6 +11,9 @@ import {
     Field,
     LabelField,
     PersonLabelFieldResponse,
+    PersonItem,
+    PersonItemResponse,
+    Response
 } from "./types";
 
 interface PersonOptions {
@@ -31,15 +34,15 @@ export const LANGUAGE_MAP: {[key: string]: number} = {
     Italienisch: 92,
 };
 
-const LABEL_FIELD_ID = "9105";
-const LABEL_OPTION = {
+export const LABEL_FIELD_ID = "9105";
+export const LABEL_OPTION = {
     id: 114,
     label: "Inbound Webformular",
 };
 
 export class PipedrivePersonService {
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
-    async addSimplePerson(client: any, req: ContactForm, owner_id: number): Promise<Response> {
+    async addSimplePerson(client: any, req: ContactForm, owner_id: number): Promise<PersonItemResponse> {
         const origin_id = `fidentity_backend_${uuidv4()}`;
         console.info(
             `PipedrivePersonService -> addPerson -> send a addPerson request to Pipedrive, origin_id: ${origin_id}`
@@ -65,23 +68,33 @@ export class PipedrivePersonService {
         }
         console.debug(`PipedrivePersonService -> addPerson -> request opts: ${JSON.stringify(opts)}`);
 
-        // Assuming NewPerson.constructFromObject is a method that takes the opts object
-        const newPerson = NewPerson.constructFromObject(opts);
+        try {
+            const newPerson = NewPerson.constructFromObject(opts);
 
-        const response = await client.addPerson(newPerson);
-        console.info(`PipedrivePersonService -> addPerson -> received response: ${JSON.stringify(response)}`);
+            const response = await client.addPerson(newPerson);
+            console.info(`PipedrivePersonService -> addPerson -> received response: ${JSON.stringify(response)}`);
 
-        return response.success === true
-            ? {
-                  success: true,
-                  data: response.data,
-                  msg: "Everything is okay",
-              }
-            : {
-                  success: false,
-                  error: new Error(response.data),
-                  msg: "Request goes wrong -> add person",
-              };
+            if (response.success) {
+                const personData: PersonItem = response.data;
+                return {
+                    success: true,
+                    data: personData,
+                    msg: "Everything is okay",
+                };
+            } else {
+                return {
+                    success: false,
+                    error: new Error(response.data),
+                    msg: "Request goes wrong -> add person",
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "An error occurred while adding the person",
+            };
+        }
     }
 
     async addLanguageForPerson(client: any, req: ContactForm, person_id: number): Promise<Response> {
@@ -110,8 +123,8 @@ export class PipedrivePersonService {
             if (response.success) {
                 return {
                     success: true,
-                    data: response.data,
-                    msg: `Person Update Success, person_id: ${person_id}, Everything is okay`,
+                    data: response.data as unknown,
+                    msg: `Language from the person successfully updated, person_id: ${person_id}, Everything is okay`,
                 };
             } else {
                 return {
@@ -124,59 +137,103 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(String(error)),
-                msg: "An error occurred while updating the person",
+                msg: "An error occurred while updating the person language",
             };
         }
     }
 
     async checkLanguage(client: any): Promise<PersonLangFieldResponse> {
-        const failMsg = "Request goes wrong -> no response";
-        const response = await client.getPersonField(LANGUAGE_FILED_ID);
-        if (response.success) {
-            console.info(`checkLanguage -> getPersonField response: ${JSON.stringify(response)}`);
-            const langField = response.data as Field<LanguageOption>;
-            const isValid = this.validateLanguageField(langField);
+        try {
+            const response = await client.getPersonField(LANGUAGE_FILED_ID);
+            if (response.success) {
+                console.info(`checkLanguage -> getPersonField response: ${JSON.stringify(response)}`);
+                const langField = response.data as Field<LanguageOption>;
+                const isValid = this.validateLanguageField(langField);
+                return {
+                    success: isValid,
+                    data: langField,
+                    msg: isValid
+                        ? "Language check PASS, Everything is okay"
+                        : `Language check FAIL, because we can't find a different LANGUAGE_KEY or language options has chanced, data: ${JSON.stringify(
+                              langField
+                          )}`,
+                };
+            }
+
             return {
-                success: isValid,
-                data: langField,
-                msg: isValid
-                    ? "Language check PASS, Everything is okay"
-                    : `Language check FAIL, because we can't find a different LANGUAGE_KEY or language options has chanced, data: ${JSON.stringify(langField)}`,
+                success: false,
+                error: new Error(response.data),
+                msg: "Request goes wrong -> getPersonField for the Language goes wrong",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "An error occurred while checking the language field",
             };
         }
-
-        return {
-            success: false,
-            error: new Error(response.data),
-            msg: "Request goes wrong -> getPersonField for the Language goes wrong",
-        };
     }
 
-    async addInboundLabelToPerson(person_id: number) {
-        
+    async addInboundLabelToPerson(client: any, person_id: number) {
+        const updateData = {
+            label: LABEL_OPTION.id,
+            label_ids: [LABEL_OPTION.id],
+        };
+        try {
+            const response = await client.updatePerson(person_id, updateData);
+            if (response.success) {
+                return {
+                    success: true,
+                    data: response.data,
+                    msg: `Inbound Webform successfully updated to the person, person_id: ${person_id}`,
+                };
+            } else {
+                return {
+                    success: false,
+                    error: new Error(response.data),
+                    msg: "Request goes wrong -> update person webform inbound label",
+                };
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "An error occurred while updating the person label, specific add the Inbound webform",
+            };
+        }
     }
 
     async checkLabelId(client: any): Promise<PersonLabelFieldResponse> {
-        const response = await client.getPersonField(LABEL_FIELD_ID);
+        try {
+            const response = await client.getPersonField(LABEL_FIELD_ID);
 
-        if (response.success) {
-            console.info(`checkLabelId -> getPersonField response: ${JSON.stringify(response)}`);
-            const labelField = response.data as Field<LabelField>;
-            const isValid = this.validateLabelIdField(labelField);
+            if (response.success) {
+                console.info(`checkLabelId -> getPersonField response: ${JSON.stringify(response)}`);
+                const labelField = response.data as Field<LabelField>;
+                const isValid = this.validateLabelIdField(labelField);
+                return {
+                    success: isValid,
+                    data: labelField,
+                    msg: isValid
+                        ? "Label check PASS, Everything is okay"
+                        : `Label check FAIL, because we can't find: ${JSON.stringify(LABEL_OPTION)} in ${JSON.stringify(
+                              labelField
+                          )}`,
+                };
+            }
+
             return {
-                success: isValid,
-                data: labelField,
-                msg: isValid
-                    ? "Label check PASS, Everything is okay"
-                    : `Label check FAIL, because we can't find: ${JSON.stringify(LABEL_OPTION)} in ${JSON.stringify(labelField)}`,
+                success: false,
+                error: new Error(response.data),
+                msg: "Request goes wrong -> getPersonField for the label id goes wrong",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "An error occurred while checking the label id",
             };
         }
-
-        return {
-            success: false,
-            error: new Error(response.data),
-            msg: "Request goes wrong -> getPersonField for the label id goes wrong",
-        };
     }
 
     validateLanguageField = (languageField: Field<LanguageOption>): boolean => {

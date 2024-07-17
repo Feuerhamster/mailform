@@ -30,7 +30,7 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
             try {
                 data = service.validateContactForm(fields);
             } catch (e: any) {
-                res.status(HttpStatusCode.BadRequest).json({message: (e as Error).message});
+                return res.status(HttpStatusCode.BadRequest).json({message: (e as Error).message});
             }
 
             const response = await service.createLead(data);
@@ -91,6 +91,7 @@ router.post("/:target", async (req: Request, res: Response) => {
         return res.status(429).end();
     }
 
+    // @ts-ignore
     let target: Target = TargetManager.targets.get(req.params.target);
 
     // parse form
@@ -118,6 +119,7 @@ router.post("/:target", async (req: Request, res: Response) => {
                 let userCaptchaResponse = fields["g-recaptcha-response"] || fields["h-captcha-response"] || null;
                 userCaptchaResponse =
                     userCaptchaResponse instanceof Array ? userCaptchaResponse[0] : userCaptchaResponse;
+                    //@ts-ignore
                 let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
 
                 if (!verified) {
