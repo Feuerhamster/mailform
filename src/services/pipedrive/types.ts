@@ -53,5 +53,6 @@ export interface AddPerson{
     personLangFieldResponse?: PersonLangFieldResponse
     addLanguageForPersonResponse?: Response<unknown> // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
     personLabelFieldResponse? : PersonLabelFieldResponse
+    addLabelFiledResponse?: Response<unknown> // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
 }
 

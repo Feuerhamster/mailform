@@ -174,7 +174,7 @@ export class PipedrivePersonService {
         }
     }
 
-    async addInboundLabelToPerson(client: any, person_id: number) {
+    async addInboundLabelToPerson(client: any, person_id: number): Promise<Response> {
         const updateData = {
             label: LABEL_OPTION.id,
             label_ids: [LABEL_OPTION.id],

@@ -13,8 +13,7 @@ import {v4 as uuidv4} from "uuid";
 import "dotenv/config";
 import {ContactForm} from "../@types/target";
 import {PipedrivePersonService} from "./pipedrive/person";
-import {AddPerson, PersonItem, Response} from "./pipedrive/types";
-import {preProcessFile} from "typescript";
+import {AddPerson, Response} from "./pipedrive/types";
 
 const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const LEAD_LABEL_ID = "74b21c90-f326-11ed-98c5-c58df5a19268";
@@ -37,18 +36,29 @@ export class PipedriveService {
         return data as ContactForm;
     }
 
-    async createLead(req: ContactForm): Promise<Response> {
+    async createAllPipedriveItemsForContactForm(req: ContactForm): Promise<Response> {
         console.info(`PipedriveService -> createLead -> for ${req.firstname} ${req.email}`);
-        const addPerReq = await this.addPerson(req);
-        if (!addPerReq.success) return addPerReq;
-        const person_id: number = (addPerReq.data as any).id;
+        let personId: number;
+        try {
+            const addPerReq = await this.addPerson(req);
+            if (!addPerReq.success)  throw addPerReq.error;
 
-        const addOrgReq = await this.addOrganization(req, person_id);
-        if (!addOrgReq.success) return addOrgReq;
-        const organization_id: number | null = addOrgReq.data.id;
+            if(!addPerReq.data?.addSimplePersonResponse?.data?.id) throw new Error("person id is undefined, unexpected behavior")
+            personId = addPerReq.data?.addSimplePersonResponse?.data?.id
+            
 
-        if (!person_id || !organization_id) throw new Error("person_id or organization_id are null");
-        return await this.addLead(person_id, organization_id);
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "We have a Problem on add an new Person the howl process are broken."
+            }
+        }
+
+
+        return {
+            success: true,
+        }
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/LeadsApi.md#addLead
@@ -81,7 +91,7 @@ export class PipedriveService {
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
-    private async addPerson(req: ContactForm): Promise<Response<AddPerson>> {
+    async addPerson(req: ContactForm): Promise<Response<AddPerson>> {
         try {
             const service = new PipedrivePersonService();
             const returnData: AddPerson = {};
@@ -111,8 +121,10 @@ export class PipedriveService {
 
             try {
                 const checkPersonLabelFiledResponse = await service.checkLabelId(service);
+                returnData.personLabelFieldResponse = checkPersonLabelFiledResponse
                 if (!checkPersonLabelFiledResponse.success) throw checkPersonLabelFiledResponse.error as Error;
                 const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(service, personId);
+                returnData.addLabelFiledResponse = addInboundLabelToPersonResponse
                 if (!addInboundLabelToPersonResponse.success) throw addInboundLabelToPersonResponse.error;
             } catch (error) {
                 console.warn(
@@ -125,14 +137,14 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                msg: "Successfully added a new People with all attributes",
+                msg: "Successfully added a new People",
             };
         } catch (error) {
-            const ex = error as any as Error;
-            console.error(ex.message);
+            const ex = error instanceof Error ? error : new Error(String(error));
+            console.error(`[Error] ${ex.message}`);
             return {
                 success: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: ex,
             };
         }
     }

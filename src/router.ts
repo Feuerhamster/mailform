@@ -59,6 +59,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
         return res.sendStatus(404);
     }
 
+    //@ts-ignore
     let target: Target = TargetManager.targets.get(req.params.target);
 
     // CORS
@@ -78,6 +79,7 @@ router.use("/:target", async (req: Request, res: Response, next: NextFunction) =
 
     // Authentication
     if (target.key) {
+        // @ts-ignore
         let bearer = /Bearer (.+)/.exec(req.headers.authorization);
 
         if (!bearer || bearer[1] !== target.key) {
