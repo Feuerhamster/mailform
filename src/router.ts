@@ -29,19 +29,23 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
 
             try {
                 data = service.validateContactForm(fields);
-            } catch (e: any) {
-                return res.status(HttpStatusCode.BadRequest).json({message: (e as Error).message});
+            } catch (error) {
+                return res.status(HttpStatusCode.BadRequest).json({message: (error as Error).message});
             }
 
-            const response = await service.createLead(data);
-            console.info(`response form createLead -> ${JSON.stringify(response)}`);
-
-            if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
-            else res.status(HttpStatusCode.BadRequest).json(response);
+            try {
+                const response = await service.createLead(data);
+                console.info(`response form createLead -> ${JSON.stringify(response)}`);
+                // TODO update this do  we have success?
+                if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
+                else res.status(HttpStatusCode.BadRequest).json(response);
+            } catch (error) {
+                return res.status(HttpStatusCode.InternalServerError).json({message: (error as Error).message});
+            }
         });
     } catch (e: any) {
-        console.error("[POST] /api/v1/contact-form -> ERROR: unhandled exception ist happened")
-        console.error(e)
+        console.error("[POST] /api/v1/contact-form -> ERROR: unhandled exception ist happened");
+        console.error(e);
         res.status(HttpStatusCode.InternalServerError).json(e);
     }
 });
@@ -119,7 +123,7 @@ router.post("/:target", async (req: Request, res: Response) => {
                 let userCaptchaResponse = fields["g-recaptcha-response"] || fields["h-captcha-response"] || null;
                 userCaptchaResponse =
                     userCaptchaResponse instanceof Array ? userCaptchaResponse[0] : userCaptchaResponse;
-                    //@ts-ignore
+                //@ts-ignore
                 let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
 
                 if (!verified) {
