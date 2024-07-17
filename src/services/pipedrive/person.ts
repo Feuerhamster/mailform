@@ -13,7 +13,7 @@ import {
     PersonLabelFieldResponse,
     PersonItem,
     PersonItemResponse,
-    Response
+    Response,
 } from "./types";
 
 interface PersonOptions {
@@ -34,7 +34,7 @@ export const LANGUAGE_MAP: {[key: string]: number} = {
     Italienisch: 92,
 };
 
-export const LABEL_FIELD_ID = "9105";
+export const LABEL_FIELD_ID = 9105;
 export const LABEL_OPTION = {
     id: 114,
     label: "Inbound Webformular",
@@ -246,7 +246,9 @@ export class PipedrivePersonService {
 
     validateLabelIdField = (labelField: Field<LabelField>): boolean => {
         return Object.values(labelField.options).some(
-            (item) => item.id === LABEL_OPTION.id && item.label === LABEL_OPTION.label
+            (item) =>
+                item.id === LABEL_OPTION.id &&
+                item.label.trim().toLowerCase() === LABEL_OPTION.label.trim().toLowerCase()
         );
     };
 

@@ -4,9 +4,9 @@ import {LABEL_FIELD_ID, LABEL_OPTION, LANGUAGE_KEY, LANGUAGE_MAP, PipedrivePerso
 import {getRequiredEnvVariable} from "../pipedrive";
 import {ContactForm} from "../../@types/target";
 import {LANGUAGE_MAPPER} from "./language-mapper";
-import { Field, LanguageKey, LanguageOption } from "./types";
+import {Field, LabelField, LanguageKey, LanguageOption} from "./types";
 
-type pipedriveResponse = {success: boolean; data: unknown}
+type PipedriveResponse = {success: boolean; data: unknown};
 
 describe("PipeDrive API Person Test", () => {
     let personClient: any;
@@ -24,13 +24,13 @@ describe("PipeDrive API Person Test", () => {
     });
 
     afterAll(async () => {
-        const deleteResponses: pipedriveResponse[] = [];
+        const deleteResponses: PipedriveResponse[] = [];
         if (personIdsToRemove.length !== 0) {
             console.info(`afterAll -> Delete created Users: ${personIdsToRemove}`);
-            
+
             for (const id of personIdsToRemove) {
                 try {
-                    const response = (await personClient.deletePerson(id)) as pipedriveResponse;
+                    const response = (await personClient.deletePerson(id)) as PipedriveResponse;
                     console.info(`afterAll -> Delete User response: ${JSON.stringify(response)}`);
                     deleteResponses.push(response);
                 } catch (error) {
@@ -38,12 +38,12 @@ describe("PipeDrive API Person Test", () => {
                 }
             }
         }
-    
+
         for (const resp of deleteResponses) {
             if (!resp.data) {
                 console.error(`afterAll -> ${JSON.stringify(resp.data)}`);
             }
-            expect(resp.success).toBe(true);  // Ensure this matches your testing framework's syntax
+            expect(resp.success).toBe(true); // Ensure this matches your testing framework's syntax
         }
     });
 
@@ -51,12 +51,12 @@ describe("PipeDrive API Person Test", () => {
         const contactForm: ContactForm = getContactForm("JEST-TEST-new-user");
 
         const response = await service.addSimplePerson(personClient, contactForm, PIPEDRIVE_INFO_ACC_ID);
-        console.log(response)
+        console.log(response);
         expect(response.success).toBeTruthy();
         expect((response.data as any).id).not.toBeNull();
         expect((response.data as any).phone[0].value == "0792223344");
         expect((response.data as any).email[0].value == "API-JEST-TEST-email");
-        personIdsToRemove.push((response.data as any).id)
+        personIdsToRemove.push((response.data as any).id);
     });
 
     it("addSimplePerson, addLanguageForPerson -> should add a new person and add the language to the person", async () => {
@@ -70,17 +70,14 @@ describe("PipeDrive API Person Test", () => {
         personIdsToRemove.push(id);
 
         const addLangForPersonResp = await service.addLanguageForPerson(personClient, contactForm, id);
-        if(!addLangForPersonResp.success) throw addLangForPersonResp.error
+        if (!addLangForPersonResp.success) throw addLangForPersonResp.error;
         expect(addLangForPersonResp.success).toBeTruthy();
-        const data = addLangForPersonResp.data as any
-        expect(data[LANGUAGE_KEY] == 88)
-        expect(data[LANGUAGE_KEY] == LANGUAGE_MAP['Deutsch'])
-
+        const data = addLangForPersonResp.data as any;
+        expect(data[LANGUAGE_KEY] == 88);
+        expect(data[LANGUAGE_KEY] == LANGUAGE_MAP["Deutsch"]);
     });
 
-    it('addSimplePerson, addInboundLabelToPerson -> should add a new person and then add the Inbound Webform to the person', () => {
-        
-    })
+    it("addSimplePerson, addInboundLabelToPerson -> should add a new person and then add the Inbound Webform to the person", () => {});
 
     it("checkLanguage -> should check pipedrive has a valid Language Field", async () => {
         const response = await service.checkLanguage(personFieldClient);
@@ -89,16 +86,17 @@ describe("PipeDrive API Person Test", () => {
         expect(response.data?.key).toBe(LANGUAGE_KEY);
     });
 
-    it('checkLabelId -> should check pipedrive has a valid Label ID', async () => {
-        const response = await service.checkLabelId(personFieldClient)
-        console.log(JSON.stringify(response))
-        expect(response.success).toBeTruthy()
-        expect(response.data?.id).toBe(LABEL_FIELD_ID)
-        expect(response.data?.options[0].id).toBe(LABEL_OPTION.id)
-        expect(response.data?.options[0].label).toBe(LABEL_OPTION.label)
-    })
+    it("checkLabelId -> should check pipedrive has a valid Label ID", async () => {
+        const response = await service.checkLabelId(personFieldClient);
+        console.log(JSON.stringify(response));
+        expect(response.success).toBeTruthy();
+        expect(response.data?.id).toBe(LABEL_FIELD_ID);
+        const inboundLabelOption = response.data?.options.find((opt) => opt.id === LABEL_OPTION.id);
+        expect(inboundLabelOption).not.toBeNull();
+        expect(inboundLabelOption?.label).toBe(LABEL_OPTION.label);
+    });
 
-    it("validateLanguageField -> should be wrong field", () => {
+    it("validateLanguageField -> the language field should be wrong and success", () => {
         const data: Field<LanguageOption> = {
             id: 7902846,
             key: "wrong-hash",
@@ -147,9 +145,36 @@ describe("PipeDrive API Person Test", () => {
         expect(rightResult).toBeTruthy();
     });
 
-    it('validateLabelIdField, should validates correctly', () => {
+    it("validateLabelIdField -> the label filed should be wrong and success", () => {
+        const data: Field<LabelField> = {
+            id: 1234,
+            key: "1234",
+            name: "Test",
+            options: [
+                {
+                    id: 1234,
+                    label: "abcd",
+                    color: "blue",
+                },
+            ],
+        };
+        const wrongResult = service.validateLabelIdField(data)
+        expect(wrongResult).toBeFalsy()
         
-    })
+        data.options.push({
+            id: 114,
+            label: "Inbound Webformular",
+            color: "yellow"
+        })
+
+        const rightResult = service.validateLabelIdField(data)
+        expect(rightResult).toBeTruthy()
+
+        data.options = []
+        const wrongResultEmpty = service.validateLabelIdField(data)
+        expect(wrongResultEmpty).toBeFalsy()
+
+    });
 
     it("test the language mapper, every property should have a german name and the german name could be 5 different languages", () => {
         for (const key in LANGUAGE_MAPPER) {
