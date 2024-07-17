@@ -36,12 +36,18 @@ export interface LabelField {
 export interface PersonItem {
     id?: number,
     company_id?: number,
-    phone?: object[],
-    email?: object[],
+    phone?: BasePersonItem[],
+    email?: BasePersonItem[],
     label?: number,
     name?: string,
     fist_name?: string,
     last_name?: string
+}
+// https://github.com/pipedrive/client-nodejs/blob/master/docs/BasePersonItemPhone.md
+export interface BasePersonItem {
+    value: string,
+    primary: boolean,
+    label: string
 }
 
 export interface UpdatePersonData {

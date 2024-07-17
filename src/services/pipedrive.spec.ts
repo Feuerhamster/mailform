@@ -41,9 +41,8 @@ describe('Pipedrive Service Tests', () => {
         expect(simplePersonResp?.fist_name).toBe(contactForm.firstname)
         expect(simplePersonResp?.email).toBe(contactForm.email)
         expect(simplePersonResp?.label).toBe(LABEL_OPTION.id)
-        expect(simplePersonResp?.phone?[0][]).toBe(contactForm.phone)
-
-
+        expect(simplePersonResp?.phone?.find(x => x.value === contactForm.phone)).not.toBeNull()
+        expect(simplePersonResp?.email?.find(x => x.value === contactForm.email)).not.toBeNull()
 
         expect(response.data?.personLangFieldResponse?.success).toBeTruthy()
         expect(response.data?.addLanguageForPersonResponse?.success).toBeTruthy()
