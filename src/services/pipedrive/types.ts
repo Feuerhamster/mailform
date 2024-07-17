@@ -40,7 +40,7 @@ export interface PersonItem {
     email?: BasePersonItem[],
     label?: number,
     name?: string,
-    fist_name?: string,
+    first_name?: string,
     last_name?: string
 }
 // https://github.com/pipedrive/client-nodejs/blob/master/docs/BasePersonItemPhone.md

@@ -120,10 +120,10 @@ export class PipedriveService {
             }
 
             try {
-                const checkPersonLabelFiledResponse = await service.checkLabelId(service);
+                const checkPersonLabelFiledResponse = await service.checkLabelId(this.personFiledClient);
                 returnData.personLabelFieldResponse = checkPersonLabelFiledResponse
                 if (!checkPersonLabelFiledResponse.success) throw checkPersonLabelFiledResponse.error as Error;
-                const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(service, personId);
+                const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(this.personClient, personId);
                 returnData.addLabelFiledResponse = addInboundLabelToPersonResponse
                 if (!addInboundLabelToPersonResponse.success) throw addInboundLabelToPersonResponse.error;
             } catch (error) {

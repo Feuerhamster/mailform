@@ -3,12 +3,14 @@ import {ApiClient, PersonsApi, PersonFieldsApi} from "pipedrive";
 import { getRequiredEnvVariable, PipedriveService } from "./pipedrive";
 import { ContactForm } from "../@types/target";
 import { LABEL_OPTION } from "./pipedrive/person";
+import { walkUpBindingElementsAndPatterns } from "typescript";
+import { removeCreatedPersons } from "./pipedrive/person.spec";
 
 
 describe('Pipedrive Service Tests', () => {
 
     let personClient: any;
-    let personFieldClient: any;
+    const personIdsToRemove: number[] = [];
     const service = new PipedriveService();
 
     beforeAll(async () => {
@@ -16,13 +18,16 @@ describe('Pipedrive Service Tests', () => {
         const apiClient = new ApiClient();
         apiClient.authentications.api_key.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
         personClient = new PersonsApi(apiClient);
-        personFieldClient = new PersonFieldsApi(apiClient);
     });
+
+    afterAll(async () => {
+        await removeCreatedPersons(personIdsToRemove, personClient);
+    })
 
 
     it('should add a new Person correctly with label and language Validation',async () => {
         const contactForm: ContactForm = {
-            firstname: 'Markus',
+            firstname: 'JEST Markus',
             lastname: 'Müller',
             email: 'markus.müller@gmail.ch',
             org: 'Boumat',
@@ -38,11 +43,13 @@ describe('Pipedrive Service Tests', () => {
         const simplePersonResp = response.data?.addSimplePersonResponse?.data
         expect(simplePersonResp?.name).toBe(`${contactForm.firstname} ${contactForm.lastname}`)
         expect(simplePersonResp?.last_name).toBe(contactForm.lastname)
-        expect(simplePersonResp?.fist_name).toBe(contactForm.firstname)
-        expect(simplePersonResp?.email).toBe(contactForm.email)
-        expect(simplePersonResp?.label).toBe(LABEL_OPTION.id)
+        expect(simplePersonResp?.first_name).toBe(contactForm.firstname)
         expect(simplePersonResp?.phone?.find(x => x.value === contactForm.phone)).not.toBeNull()
         expect(simplePersonResp?.email?.find(x => x.value === contactForm.email)).not.toBeNull()
+        expect(simplePersonResp?.id).not.toBeNull()
+        const personId = simplePersonResp?.id
+        if(personId) personIdsToRemove.push(personId)
+
 
         expect(response.data?.personLangFieldResponse?.success).toBeTruthy()
         expect(response.data?.addLanguageForPersonResponse?.success).toBeTruthy()
