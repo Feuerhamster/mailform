@@ -34,7 +34,7 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
             }
 
             try {
-                const response = await service.createLead(data);
+                const response = await service.createAllPipedriveItemsForContactForm(data);
                 console.info(`response form createLead -> ${JSON.stringify(response)}`);
                 // TODO update this do  we have success?
                 if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
