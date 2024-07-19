@@ -2,7 +2,6 @@
 import {NewPerson} from "pipedrive";
 import {ContactForm} from "../../@types/target";
 import {v4 as uuidv4} from "uuid";
-import {getCurrentUTCDateTime} from "../pipedrive";
 import {LANGUAGE_MAPPER} from "./language-mapper";
 import {
     LanguageKey,
@@ -20,7 +19,6 @@ interface PersonOptions {
     name: string;
     owner_id: number;
     email: {value: string}[];
-    add_time: string;
     phone?: {value: string}[]; // phone is optional
 }
 
@@ -55,8 +53,7 @@ export class PipedrivePersonService {
                 {
                     value: req.email,
                 },
-            ],
-            add_time: getCurrentUTCDateTime(),
+            ]
         };
 
         if (req.phone) {
@@ -233,6 +230,35 @@ export class PipedrivePersonService {
                 error: error instanceof Error ? error : new Error(String(error)),
                 msg: "An error occurred while checking the label id",
             };
+        }
+    }
+
+    async connectOrgAndPerson(client: any, person_id: number, organization_id: number): Promise<Response> {
+        const data = {
+            org_id: organization_id
+        };
+        try {
+            const response = await client.updatePerson(person_id, data);
+            if(response.success) {
+                return {
+                    success: true,
+                    data: response.data as unknown,
+                    msg: `Organization successfully connected with the Person org_id: ${organization_id}, person_id: ${person_id}`
+                }
+            }
+
+            return {
+                success: false,
+                error: new Error(response.data),
+                msg: "Request goes wrong -> we can't connect organization with the person"
+
+            }
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error)),
+                msg: "An error occurred while connecting organization with the person"
+            }
         }
     }
 

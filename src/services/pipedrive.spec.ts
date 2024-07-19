@@ -2,9 +2,7 @@
 import {ApiClient, PersonsApi, PersonFieldsApi} from "pipedrive";
 import { getRequiredEnvVariable, PipedriveService } from "./pipedrive";
 import { ContactForm } from "../@types/target";
-import { LABEL_OPTION } from "./pipedrive/person";
-import { walkUpBindingElementsAndPatterns } from "typescript";
-import { removeCreatedPersons } from "./pipedrive/person.spec";
+import { removeCreatedPersons } from "./pipedrive/helper.spec";
 
 
 describe('Pipedrive Service Tests', () => {

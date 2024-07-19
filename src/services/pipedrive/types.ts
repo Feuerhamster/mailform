@@ -6,6 +6,7 @@ export type LanguageKey = keyof typeof LANGUAGE_MAPPER;
 export interface PersonItemResponse extends Response<PersonItem> {}
 export interface PersonLangFieldResponse extends Response<Field<LanguageOption>> {}
 export interface PersonLabelFieldResponse extends Response<Field<LabelField>> {}
+export interface OrganizationResponse extends Response<AddOrganization> {}
 
 export interface Response<T = unknown> {
     success: boolean;
@@ -61,4 +62,11 @@ export interface AddPerson{
     personLabelFieldResponse? : PersonLabelFieldResponse
     addLabelFiledResponse?: Response<unknown> // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
 }
+
+export interface AddOrganization {
+    id?: number,
+    name?: string,
+    label?: number
+}
+
 

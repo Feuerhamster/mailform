@@ -13,9 +13,11 @@ import {v4 as uuidv4} from "uuid";
 import "dotenv/config";
 import {ContactForm} from "../@types/target";
 import {PipedrivePersonService} from "./pipedrive/person";
-import {AddPerson, Response} from "./pipedrive/types";
+import {AddPerson, OrganizationResponse, Response} from "./pipedrive/types";
+import { PipedriveOrganizationService } from "./pipedrive/organization";
 
-const PIPEDRIVE_INFO_ACC_ID = 13132618;
+// TODO check every create Person Org or Lead has the info account set.
+export const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const LEAD_LABEL_ID = "74b21c90-f326-11ed-98c5-c58df5a19268";
 const apiClient = new ApiClient();
 
@@ -23,6 +25,7 @@ const apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
 
 export class PipedriveService {
+    // TODO use a constructor
     leadClient = new LeadsApi(apiClient);
     personClient = new PersonsApi(apiClient);
     personFiledClient = new PersonFieldsApi(apiClient);
@@ -41,24 +44,22 @@ export class PipedriveService {
         let personId: number;
         try {
             const addPerReq = await this.addPerson(req);
-            if (!addPerReq.success)  throw addPerReq.error;
+            if (!addPerReq.success) throw addPerReq.error;
 
-            if(!addPerReq.data?.addSimplePersonResponse?.data?.id) throw new Error("person id is undefined, unexpected behavior")
-            personId = addPerReq.data?.addSimplePersonResponse?.data?.id
-            
-
+            if (!addPerReq.data?.addSimplePersonResponse?.data?.id)
+                throw new Error("person id is undefined, unexpected behavior");
+            personId = addPerReq.data?.addSimplePersonResponse?.data?.id;
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(String(error)),
-                msg: "We have a Problem on add an new Person the howl process are broken."
-            }
+                msg: "We have a Problem on add an new Person the howl process are broken.",
+            };
         }
-
 
         return {
             success: true,
-        }
+        };
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/LeadsApi.md#addLead
@@ -121,10 +122,13 @@ export class PipedriveService {
 
             try {
                 const checkPersonLabelFiledResponse = await service.checkLabelId(this.personFiledClient);
-                returnData.personLabelFieldResponse = checkPersonLabelFiledResponse
+                returnData.personLabelFieldResponse = checkPersonLabelFiledResponse;
                 if (!checkPersonLabelFiledResponse.success) throw checkPersonLabelFiledResponse.error as Error;
-                const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(this.personClient, personId);
-                returnData.addLabelFiledResponse = addInboundLabelToPersonResponse
+                const addInboundLabelToPersonResponse = await service.addInboundLabelToPerson(
+                    this.personClient,
+                    personId
+                );
+                returnData.addLabelFiledResponse = addInboundLabelToPersonResponse;
                 if (!addInboundLabelToPersonResponse.success) throw addInboundLabelToPersonResponse.error;
             } catch (error) {
                 console.warn(
@@ -150,42 +154,20 @@ export class PipedriveService {
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/OrganizationsApi.md#addOrganization
-    private async addOrganization(req: ContactForm, person_id: number) {
-        const origin_id = `fidentity_backend_${uuidv4()}`;
-        console.info(
-            `PipedriveService -> addOrganization -> send a addLead request to Pipedrive, origin_id: ${origin_id}`
-        );
-
-        const opts = NewOrganization.constructFromObject({
-            name: req.org,
-            add_time: getCurrentUTCDateTime(),
-            owner_id: PIPEDRIVE_INFO_ACC_ID,
-        });
-
-        const response = await this.organizationClient(opts);
-
-        console.info(`PipedriveService -> addOrganization -> received response: ${JSON.stringify(response)}`);
-        return response.success == true
-            ? {
-                  success: true,
-                  data: response.data,
-                  msg: "Everything is okay",
-              }
-            : {
-                  success: false,
-                  error: new Error(response.data),
-                  msg: "Request goes wrong -> add Organization",
-              };
+    async addOrganization(req: ContactForm) {
+        const service = new PipedriveOrganizationService()
+        service.addSimpleOrganization(this.organizationClient, req)
     }
+        
 }
 
-export function getCurrentUTCDateTime(): string {
-    const now = new Date();
-    const isoString = now.toISOString(); // e.g., "2024-06-17T13:47:00.000Z"
-    const datePart = isoString.split("T")[0]; // "2024-06-17"
-    const timePart = isoString.split("T")[1].split(".")[0]; // "13:47:00"
-    return `${datePart} ${timePart}`;
-}
+//export function getCurrentUTCDateTime(): string {
+//    const now = new Date();
+//    const isoString = now.toISOString(); // e.g., "2024-06-17T13:47:00.000Z"
+//    const datePart = isoString.split("T")[0]; // "2024-06-17"
+//    const timePart = isoString.split("T")[1].split(".")[0]; // "13:47:00"
+//    return `${datePart} ${timePart}`;
+//}
 
 export function getRequiredEnvVariable(varName: string): string {
     const value = process.env[varName];

@@ -1,18 +1,21 @@
 // @ts-ignore
-import {ApiClient, PersonsApi, PersonFieldsApi} from "pipedrive";
+import {ApiClient, PersonsApi, PersonFieldsApi, OrganizationsApi} from "pipedrive";
 import {LABEL_FIELD_ID, LABEL_OPTION, LANGUAGE_KEY, LANGUAGE_MAP, PipedrivePersonService} from "./person";
-import {getRequiredEnvVariable} from "../pipedrive";
+import {getRequiredEnvVariable, PipedriveService} from "../pipedrive";
 import {ContactForm} from "../../@types/target";
 import {LANGUAGE_MAPPER} from "./language-mapper";
 import {Field, LabelField, LanguageKey, LanguageOption} from "./types";
-
-type PipedriveResponse = {success: boolean; data: unknown};
+import { isTemplateSpan } from "typescript";
+import { getContactForm, removeCreatedPersons, removeOrganization } from "./helper.spec";
+import { PipedriveOrganizationService } from "./organization";
 
 describe("PipeDrive API Person Test", () => {
     let personClient: any;
     let personFieldClient: any;
+    let orgClient: any;
+    let service: PipedrivePersonService;
     const personIdsToRemove: number[] = [];
-    const service = new PipedrivePersonService();
+    const organizationsIdsToRemove: number[] = [];
     const PIPEDRIVE_INFO_ACC_ID = 13_132_618;
 
     beforeAll(async () => {
@@ -21,17 +24,19 @@ describe("PipeDrive API Person Test", () => {
         apiClient.authentications.api_key.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
         personClient = new PersonsApi(apiClient);
         personFieldClient = new PersonFieldsApi(apiClient);
+        orgClient = new OrganizationsApi(apiClient);
+        service = new PipedrivePersonService();
     });
 
     afterAll(async () => {
         await removeCreatedPersons(personIdsToRemove, personClient);
+        await removeOrganization(organizationsIdsToRemove, orgClient);
     });
 
     it("addSimplePerson -> should add a new Person into Pipedrive", async () => {
         const contactForm: ContactForm = getContactForm("JEST-TEST-new-user");
 
         const response = await service.addSimplePerson(personClient, contactForm, PIPEDRIVE_INFO_ACC_ID);
-        console.log(response);
         expect(response.success).toBeTruthy();
         expect((response.data as any).id).not.toBeNull();
         expect((response.data as any).phone[0].value == "0792223344");
@@ -43,7 +48,7 @@ describe("PipeDrive API Person Test", () => {
         const contactForm: ContactForm = getContactForm("JEST-TEST-update-user");
 
         const simplePersonResp = await service.addSimplePerson(personClient, contactForm, PIPEDRIVE_INFO_ACC_ID);
-        expect(simplePersonResp.success);
+        expect(simplePersonResp.success).toBeTruthy();
 
         const id = (simplePersonResp.data as any).id as number;
         expect(id).not.toBeNull();
@@ -58,6 +63,29 @@ describe("PipeDrive API Person Test", () => {
     });
 
     it("addSimplePerson, addInboundLabelToPerson -> should add a new person and then add the Inbound Webform to the person", () => {});
+
+    it('addSimplePerson, addOrganization and connect this together', async () => {
+        const contactForm: ContactForm = getContactForm("JEST-TEST-connected-with-org");
+
+        const simplePersonResp = await service.addSimplePerson(personClient, contactForm, PIPEDRIVE_INFO_ACC_ID);
+        expect(simplePersonResp.success).toBeTruthy();
+
+        const personId = simplePersonResp.data?.id as number
+        expect(personId).not.toBeNull();
+        personIdsToRemove.push(personId);
+
+        const pipeDriveService = new PipedriveOrganizationService()
+
+        const addOrgResp = await pipeDriveService.addSimpleOrganization(orgClient, contactForm)
+        expect(addOrgResp.success).toBeTruthy()
+
+        const orgId = addOrgResp.data?.id as number
+        expect(orgId).not.toBeNull()
+        organizationsIdsToRemove.push(orgId)
+
+        const response = await service.connectOrgAndPerson(personClient, personId, orgId)
+        expect(response.success).toBeTruthy()
+    })
 
     it("checkLanguage -> should check pipedrive has a valid Language Field", async () => {
         const response = await service.checkLanguage(personFieldClient);
@@ -168,38 +196,4 @@ describe("PipeDrive API Person Test", () => {
     });
 });
 
-export async function removeCreatedPersons(personIdsToRemove: number[], personClient: any) {
-    const deleteResponses: PipedriveResponse[] = [];
-    if (personIdsToRemove.length !== 0) {
-        console.info(`afterAll -> Delete created Users: ${personIdsToRemove}`);
 
-        for (const id of personIdsToRemove) {
-            try {
-                const response = (await personClient.deletePerson(id)) as PipedriveResponse;
-                console.info(`afterAll -> Delete User response: ${JSON.stringify(response)}`);
-                deleteResponses.push(response);
-            } catch (error) {
-                console.error(`afterAll -> Failed to delete user with ID ${id}: ${(error as any).message}`);
-            }
-        }
-    }
-
-    for (const resp of deleteResponses) {
-        if (!resp.data) {
-            console.error(`afterAll -> ${JSON.stringify(resp.data)}`);
-        }
-        expect(resp.success).toBe(true);
-    }
-}
-
-function getContactForm(id: string): ContactForm {
-    return {
-        firstname: `${id}-firstname`,
-        lastname: `${id}-lastname`,
-        org: `${id}-org`,
-        email: `${id}-email`,
-        phone: `0792223344`,
-        msg: `This is a test form fidentity API`,
-        language: `de-CH`,
-    };
-}
