@@ -1,6 +1,6 @@
 // @ts-ignore
 import {ApiClient, PersonsApi, PersonFieldsApi, OrganizationsApi} from "pipedrive";
-import {LABEL_FIELD_ID, LABEL_OPTION, LANGUAGE_KEY, LANGUAGE_MAP, PipedrivePersonService} from "./person";
+import {PERSON_LABEL_FIELD_ID, PERSON_LABEL_OPTION, LANGUAGE_KEY, LANGUAGE_MAP, PipedrivePersonService, validateLabelIdField} from "./person";
 import {getRequiredEnvVariable, PipedriveService} from "../pipedrive";
 import {ContactForm} from "../../@types/target";
 import {LANGUAGE_MAPPER} from "./language-mapper";
@@ -98,10 +98,10 @@ describe("PipeDrive API Person Test", () => {
         const response = await service.checkLabelId(personFieldClient);
         console.log(JSON.stringify(response));
         expect(response.success).toBeTruthy();
-        expect(response.data?.id).toBe(LABEL_FIELD_ID);
-        const inboundLabelOption = response.data?.options.find((opt) => opt.id === LABEL_OPTION.id);
+        expect(response.data?.id).toBe(PERSON_LABEL_FIELD_ID);
+        const inboundLabelOption = response.data?.options.find((opt) => opt.id === PERSON_LABEL_OPTION.id);
         expect(inboundLabelOption).not.toBeNull();
-        expect(inboundLabelOption?.label).toBe(LABEL_OPTION.label);
+        expect(inboundLabelOption?.label).toBe(PERSON_LABEL_OPTION.label);
     });
 
     it("validateLanguageField -> the language field should be wrong and success", () => {
@@ -166,7 +166,7 @@ describe("PipeDrive API Person Test", () => {
                 },
             ],
         };
-        const wrongResult = service.validateLabelIdField(data)
+        const wrongResult = validateLabelIdField(data, PERSON_LABEL_OPTION)
         expect(wrongResult).toBeFalsy()
         
         data.options.push({
@@ -175,11 +175,11 @@ describe("PipeDrive API Person Test", () => {
             color: "yellow"
         })
 
-        const rightResult = service.validateLabelIdField(data)
+        const rightResult = validateLabelIdField(data, PERSON_LABEL_OPTION)
         expect(rightResult).toBeTruthy()
 
         data.options = []
-        const wrongResultEmpty = service.validateLabelIdField(data)
+        const wrongResultEmpty = validateLabelIdField(data, PERSON_LABEL_OPTION)
         expect(wrongResultEmpty).toBeFalsy()
 
     });

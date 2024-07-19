@@ -50,7 +50,7 @@ describe('Pipedrive Service Tests', () => {
 
 
         expect(response.data?.personLangFieldResponse?.success).toBeTruthy()
-        expect(response.data?.addLanguageForPersonResponse?.success).toBeTruthy()
+        expect(response.data?.addLangForPersonResponse?.success).toBeTruthy()
         expect(response.data?.personLangFieldResponse?.success).toBeTruthy()
         expect(response.data?.addLabelFiledResponse?.success).toBeTruthy()
     })

@@ -33,7 +33,7 @@ export async function removeOrganization(organizationsIdsToRemove: number[], org
 
         for (const id of organizationsIdsToRemove) {
             try {
-                const response = (await orgClient.deletePerson(id)) as PipedriveResponse;
+                const response = (await orgClient.deleteOrganization(id)) as PipedriveResponse;
                 console.info(`afterAll -> Delete Organization response: ${JSON.stringify(response)}`);
                 deleteResponses.push(response);
             } catch (error) {

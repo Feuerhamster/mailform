@@ -5,7 +5,7 @@ import {
     PersonFieldsApi,
     OrganizationsApi,
     AddLeadRequest,
-    NewOrganization,
+    OrganizationFieldsApi,
     //@ts-ignore
 } from "pipedrive";
 import {v4 as uuidv4} from "uuid";
@@ -13,7 +13,7 @@ import {v4 as uuidv4} from "uuid";
 import "dotenv/config";
 import {ContactForm} from "../@types/target";
 import {PipedrivePersonService} from "./pipedrive/person";
-import {AddPerson, OrganizationResponse, Response} from "./pipedrive/types";
+import {AddOrganization, AddPerson, OrganizationItemResponse, Response} from "./pipedrive/types";
 import { PipedriveOrganizationService } from "./pipedrive/organization";
 
 // TODO check every create Person Org or Lead has the info account set.
@@ -29,7 +29,8 @@ export class PipedriveService {
     leadClient = new LeadsApi(apiClient);
     personClient = new PersonsApi(apiClient);
     personFiledClient = new PersonFieldsApi(apiClient);
-    organizationClient = new OrganizationsApi(apiClient);
+    orgClient = new OrganizationsApi(apiClient);
+    orgFieldClient = new OrganizationFieldsApi(apiClient);
 
     validateContactForm(data: any): ContactForm {
         if (data.firstname === null) throw new Error("firstname is empty");
@@ -52,7 +53,7 @@ export class PipedriveService {
         } catch (error) {
             return {
                 success: false,
-                error: error instanceof Error ? error : new Error(String(error)),
+                error: error instanceof Error ? error : new Error(JSON.stringify(error)),
                 msg: "We have a Problem on add an new Person the howl process are broken.",
             };
         }
@@ -86,7 +87,7 @@ export class PipedriveService {
               }
             : {
                   success: false,
-                  error: new Error(response.data),
+                  error: new Error(JSON.stringify(response.data)),
                   msg: "Request goes wrong -> add Lead",
               };
     }
@@ -98,7 +99,7 @@ export class PipedriveService {
             const returnData: AddPerson = {};
             const personResponse = await service.addSimplePerson(this.personClient, req, PIPEDRIVE_INFO_ACC_ID);
 
-            if (!personResponse.success) throw personResponse.error as Error;
+            if (!personResponse.success) throw personResponse.error;
             returnData.addSimplePersonResponse = personResponse;
             const personId = personResponse.data?.id;
             if (!personId) throw new Error("The new created person has no personId");
@@ -112,7 +113,7 @@ export class PipedriveService {
                     req,
                     personId
                 );
-                returnData.addLanguageForPersonResponse = addLanguageForPersonResponse;
+                returnData.addLangForPersonResponse = addLanguageForPersonResponse;
                 if (!addLanguageForPersonResponse.success) throw addLanguageForPersonResponse.error as Error;
             } catch (error) {
                 console.warn(
@@ -144,7 +145,7 @@ export class PipedriveService {
                 msg: "Successfully added a new People",
             };
         } catch (error) {
-            const ex = error instanceof Error ? error : new Error(String(error));
+            const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
             console.error(`[Error] ${ex.message}`);
             return {
                 success: false,
@@ -155,8 +156,35 @@ export class PipedriveService {
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/OrganizationsApi.md#addOrganization
     async addOrganization(req: ContactForm) {
-        const service = new PipedriveOrganizationService()
-        service.addSimpleOrganization(this.organizationClient, req)
+        try {
+            const service = new PipedriveOrganizationService()
+            const returnData: AddOrganization = {}
+            const addSimpleOrgResp = await service.addSimpleOrganization(this.orgClient, req)
+
+            if(!addSimpleOrgResp.success) throw addSimpleOrgResp.error
+            returnData.addSimpleOrgResponse = addSimpleOrgResp;
+            const orgId = addSimpleOrgResp.data?.id;
+            if (!orgId) throw new Error("The new created person has no orgId");
+
+            try {
+                const checkOrgLabelFiledResponse = await service.checkLabelId(this.orgFieldClient);
+                returnData.orgLabelFieldResponse = checkOrgLabelFiledResponse;
+                if (!checkOrgLabelFiledResponse.success) throw checkOrgLabelFiledResponse.error as Error;
+                const addInboundLabelToOrgResponse = await service.addInboundLabelToOrg(
+                    this.orgClient,
+                    orgId
+                );
+                returnData.addLabelFiledResponse = addInboundLabelToOrgResponse;
+                if (!addInboundLabelToOrgResponse.success) throw addInboundLabelToOrgResponse.error;
+            } catch (error) {
+                console.warn(
+                    `We can't add the Inbound Form Label for Org with ID: ${orgId}, because: ${
+                        (error as Error).message
+                    }`
+                );
+            }
+
+        }
     }
         
 }
