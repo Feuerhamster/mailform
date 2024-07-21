@@ -12,7 +12,7 @@ export interface Response<T = unknown> {
     success: boolean;
     data?: T;
     error?: Error;
-    msg?: string;
+    msg: () => void;
 }
 
 export interface Field<T = unknown> {
@@ -31,6 +31,16 @@ export interface LabelField {
     id: number,
     label: string,
     color: string
+}
+
+export interface LeadLabels{
+    success: boolean;
+    data: LeadLabel[]
+}
+
+export interface LeadLabel {
+    id: string, 
+    name: string,
 }
 
 // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonItem.md

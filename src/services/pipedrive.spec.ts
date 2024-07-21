@@ -22,6 +22,20 @@ describe('Pipedrive Service Tests', () => {
         await removeCreatedPersons(personIdsToRemove, personClient);
     })
 
+    it.skip('should add a new create all needed pipedrive item for the contact form', async () => {
+        const contactForm: ContactForm = {
+            firstname: 'JEST Patrick',
+            lastname: 'Hornbach',
+            email: 'patrick.hornbach@gmail.ch',
+            org: 'JEST Lind',
+            language: 'de-CH',
+            phone: "0791231212",
+            msg: "Geht das auf dein oder auf mein Nacken"
+        }
+        const response = await service.createAllPipedriveItemsForContactForm(contactForm)
+        expect(response.success).toBeTruthy()
+    })
+
 
     it('should add a new Person correctly with label and language Validation',async () => {
         const contactForm: ContactForm = {
