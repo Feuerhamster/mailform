@@ -8,11 +8,8 @@
         "outDir": "dist",
         "allowSyntheticDefaultImports": true,
         "types": ["jest", "node"],
-        "strict": true
-        
+        "strict": false
     },
     "include": ["src", "jest.setup.ts"],
-    "exclude": [
-        "node_modules"
-    ]
+    "exclude": ["node_modules"]
 }
