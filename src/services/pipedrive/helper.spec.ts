@@ -1,4 +1,4 @@
-import { ContactForm } from "../../@types/target";
+import {ContactForm} from '../../@types/target';
 
 type PipedriveResponse = {success: boolean; data: unknown};
 
@@ -52,12 +52,11 @@ export async function removeOrganization(organizationsIdsToRemove: number[], org
 
 export function getContactForm(id: string): ContactForm {
     return {
-        firstname: `${id}-firstname`,
-        lastname: `${id}-lastname`,
-        org: `${id}-org`,
+        name: `${id}-firstname`,
+        organization: `${id}-org`,
         email: `${id}-email`,
         phone: `0792223344`,
-        msg: `This is a test form fidentity API`,
+        message: `This is a test form fidentity API`,
         language: `de-CH`,
     };
 }

@@ -1,11 +1,7 @@
-import {
-    AddLeadRequest,
-    //@ts-ignore
-} from "pipedrive";
-import {ContactForm} from "../../@types/target";
-import {PIPEDRIVE_INFO_ACC_ID} from "../pipedrive";
-import {Field, LabelField, LabelFieldResponse, LeadLabel, LeadLabels, Response} from "./types";
-import {validateLabelIdField} from "./person";
+import {AddLeadRequest} from 'pipedrive';
+import {ContactForm} from '../../@types/target';
+import {PIPEDRIVE_INFO_ACC_ID} from '../pipedrive';
+import {LeadLabel, LeadLabels, Response} from './types';
 
 interface LeadOptions {
     title: string;
@@ -16,15 +12,21 @@ interface LeadOptions {
 }
 
 const LEAD_LABEL_OPTION: LeadLabel = {
-    id: "74b21c90-f326-11ed-98c5-c58df5a19268",
-    name: "Inbound Webformular",
+    id: '74b21c90-f326-11ed-98c5-c58df5a19268',
+    name: 'Inbound Webformular',
 };
 
 export class PipedriveLeadService {
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/LeadsApi.md#addLead
-    async addLead(leadClient: any, leadLabelClient: any, req: ContactForm, personId: number, organizationId?: number): Promise<Response> {
+    async addLead(
+        leadClient: any,
+        leadLabelClient: any,
+        req: ContactForm,
+        personId: number,
+        organizationId?: number
+    ): Promise<Response> {
         const opt: LeadOptions = {
-            title: `Anfrage Webformular ${req.firstname}`,
+            title: `Anfrage Webformular ${req.name}`,
             owner_id: PIPEDRIVE_INFO_ACC_ID,
             person_id: personId,
         };
@@ -52,13 +54,13 @@ export class PipedriveLeadService {
                 return {
                     success: true,
                     data: response.data,
-                    log: () => console.info("Successfully created a lead, Everything is okay"),
+                    log: () => console.info('Successfully created a lead, Everything is okay'),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    log: () => console.error("Request goes wrong -> add Lead"),
+                    log: () => console.error('Request goes wrong -> add Lead'),
                 };
             }
         } catch (error) {
@@ -66,7 +68,7 @@ export class PipedriveLeadService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(errorMessage),
-                log: () => console.error("An error occurred while adding the lead"),
+                log: () => console.error('An error occurred while adding the lead'),
             };
         }
     }

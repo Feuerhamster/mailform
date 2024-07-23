@@ -1,17 +1,13 @@
-import {
-    NewOrganization,
-    UpdateOrganization,
-    //@ts-ignore
-} from "pipedrive";
-import {ContactForm} from "../../@types/target";
-import {Field, LabelField, LabelFieldResponse, OrganizationItemResponse, Response} from "./types";
-import {PIPEDRIVE_INFO_ACC_ID} from "../pipedrive";
-import {PERSON_LABEL_OPTION, validateLabelIdField} from "./person";
+import {NewOrganization} from 'pipedrive';
+import {ContactForm} from '../../@types/target';
+import {PIPEDRIVE_INFO_ACC_ID} from '../pipedrive';
+import {PERSON_LABEL_OPTION, validateLabelIdField} from './person';
+import {Field, LabelField, LabelFieldResponse, OrganizationItemResponse, Response} from './types';
 
 export const ORG_LABEL_ID = 4041;
 export const ORG_LABEL_OPTION = {
     id: 113,
-    label: "Inbound Webformular",
+    label: 'Inbound Webformular',
 };
 
 export class PipedriveOrganizationService {
@@ -20,7 +16,7 @@ export class PipedriveOrganizationService {
         console.info(`PipedriveService -> addOrganization -> send a addLead request to Pipedrive`);
 
         const opts = NewOrganization.constructFromObject({
-            name: req.org,
+            name: req.organization,
             owner_id: PIPEDRIVE_INFO_ACC_ID,
         });
 
@@ -32,12 +28,12 @@ export class PipedriveOrganizationService {
                 ? {
                       success: true,
                       data: response.data,
-                      log: () => console.info("Successfully added a new Organization"),
+                      log: () => console.info('Successfully added a new Organization'),
                   }
                 : {
                       success: false,
                       error: new Error(JSON.stringify(response.data)),
-                      log: () => console.error("Request goes wrong -> add Organization"),
+                      log: () => console.error('Request goes wrong -> add Organization'),
                   };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
@@ -46,7 +42,7 @@ export class PipedriveOrganizationService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(errorMessage),
-                log: () => console.error("An error occurred while adding the organization"),
+                log: () => console.error('An error occurred while adding the organization'),
             };
         }
     }
@@ -64,7 +60,7 @@ export class PipedriveOrganizationService {
                     data: labelField,
                     log: () =>
                         isValid
-                            ? console.info("Label check PASS, Everything is okay")
+                            ? console.info('Label check PASS, Everything is okay')
                             : console.error(
                                   `Label check FAIL, because we can't find: ${JSON.stringify(
                                       PERSON_LABEL_OPTION
@@ -76,13 +72,13 @@ export class PipedriveOrganizationService {
             return {
                 success: false,
                 error: new Error(JSON.stringify(response.data)),
-                log: () => console.error("Request goes wrong -> check Label for the label id goes wrong"),
+                log: () => console.error('Request goes wrong -> check Label for the label id goes wrong'),
             };
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => console.error("An error occurred while checking the label id"),
+                log: () => console.error('An error occurred while checking the label id'),
             };
         }
     }
@@ -99,14 +95,14 @@ export class PipedriveOrganizationService {
                 return {
                     success: true,
                     data: response.data,
-                    log: () => console.info("Successfully updated the the Inbound Webfrom Label to the Organization"),
+                    log: () => console.info('Successfully updated the the Inbound Webfrom Label to the Organization'),
                 };
             }
 
             return {
                 success: false,
                 error: new Error(JSON.stringify(response.data)),
-                log: () => console.error("Request goes wrong -> update Inbound Webform to Organization"),
+                log: () => console.error('Request goes wrong -> update Inbound Webform to Organization'),
             };
         } catch (error) {
             return {
@@ -114,10 +110,9 @@ export class PipedriveOrganizationService {
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
                 log: () =>
                     console.error(
-                        "An error occurred while updating the organization label, specific add the Inbound Webform"
+                        'An error occurred while updating the organization label, specific add the Inbound Webform'
                     ),
             };
         }
     }
-
 }

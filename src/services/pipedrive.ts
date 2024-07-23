@@ -1,19 +1,20 @@
+import 'dotenv/config';
 import {
+    AddNoteRequest,
     ApiClient,
-    LeadsApi,
-    PersonsApi,
-    PersonFieldsApi,
-    OrganizationsApi,
-    OrganizationFieldsApi,
     LeadLabelsApi,
-    //@ts-ignore
-} from "pipedrive";
-import "dotenv/config";
-import {ContactForm} from "../@types/target";
-import {PipedrivePersonService} from "./pipedrive/person";
-import {AddOrganization, AddPerson, OrganizationItemResponse, Response} from "./pipedrive/types";
-import {PipedriveOrganizationService} from "./pipedrive/organization";
-import {PipedriveLeadService} from "./pipedrive/lead";
+    LeadsApi,
+    NotesApi,
+    OrganizationFieldsApi,
+    OrganizationsApi,
+    PersonFieldsApi,
+    PersonsApi,
+} from 'pipedrive';
+import {ContactForm} from '../@types/target';
+import {PipedriveLeadService} from './pipedrive/lead';
+import {PipedriveOrganizationService} from './pipedrive/organization';
+import {PipedrivePersonService} from './pipedrive/person';
+import {AddOrganization, AddPerson, Response} from './pipedrive/types';
 
 // TODO Test for logs
 export const PIPEDRIVE_INFO_ACC_ID = 13132618;
@@ -21,10 +22,9 @@ export const PIPEDRIVE_INFO_ACC_ID = 13132618;
 const apiClient = new ApiClient();
 
 const apiToken = apiClient.authentications.api_key;
-apiToken.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
+apiToken.apiKey = getRequiredEnvVariable('PIPEDRIVE_API_SECRET');
 
 export class PipedriveService {
-
     // TODO use a constructor
     leadClient = new LeadsApi(apiClient);
     leadLabelClient = new LeadLabelsApi(apiClient);
@@ -33,33 +33,34 @@ export class PipedriveService {
     orgClient = new OrganizationsApi(apiClient);
     orgFieldClient = new OrganizationFieldsApi(apiClient);
     personService = new PipedrivePersonService();
+    notesClient = new NotesApi(apiClient);
     // TODO implement the Notes Service
 
     validateContactForm(data: any): ContactForm {
-        if (data.firstname === null) throw new Error("firstname is empty");
-        if (data.lastname === null) throw new Error("lastname is empty");
-        if (data.org === null) throw new Error("org is empty");
-        if (data.email === null) throw new Error("email is empty");
+        if (data.name === null) throw new Error('name is empty');
+        if (data.org === null) throw new Error('org is empty');
+        if (data.email === null) throw new Error('email is empty');
         return data as ContactForm;
     }
 
     async createAllPipedriveItemsForContactForm(req: ContactForm): Promise<Response> {
-        console.info(`PipedriveService -> createLead -> for ${req.firstname} ${req.email}`);
+        console.info(`PipedriveService -> createLead -> for ${req.name} ${req.email}`);
         let personId: number | undefined;
         let orgId: number | undefined;
+        let leadId: number | undefined;
         try {
             const addPerReq = await this.addPerson(req);
             addPerReq.log();
             if (!addPerReq.success) throw addPerReq.error;
 
             if (!addPerReq.data?.addSimplePersonResponse?.data?.id)
-                throw new Error("Person id is undefined, unexpected behavior");
+                throw new Error('Person id is undefined, unexpected behavior');
             personId = addPerReq.data?.addSimplePersonResponse?.data?.id;
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => console.error("We have a Problem on add an new Person the howl process are broken."),
+                log: () => console.error('We have a Problem on add an new Person the howl process are broken.'),
             };
         }
 
@@ -69,7 +70,7 @@ export class PipedriveService {
             if (!addOrgResp.success) throw addOrgResp.error;
 
             if (!addOrgResp.data?.addSimpleOrgResponse?.data?.id) {
-                throw new Error("Organization id is undefined, unexpected behavior");
+                throw new Error('Organization id is undefined, unexpected behavior');
             }
             orgId = addOrgResp.data?.addSimpleOrgResponse?.data?.id;
         } catch (error) {
@@ -84,27 +85,76 @@ export class PipedriveService {
                     connectionResp.log();
                     throw connectionResp.error;
                 }
-            } else throw new Error("orgId is null or undefined wie can´t connect the org with the person");
+            } else throw new Error('orgId is null or undefined wie can´t connect the org with the person');
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
             console.error(`[Error] connection between organization and person, error: ${ex.message}`);
         }
 
         try {
-            const leadResp = await new PipedriveLeadService().addLead(this.leadClient, this.leadLabelClient, req, personId, orgId);
+            const leadResp = await new PipedriveLeadService().addLead(
+                this.leadClient,
+                this.leadLabelClient,
+                req,
+                personId,
+                orgId
+            );
             if (!leadResp.success) {
                 leadResp.log();
                 throw leadResp.error;
             }
+            leadId = (leadResp.data as any).id;
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
             console.error(`[Error] add a lead, error: ${ex.message}`);
         }
 
+        // add Note
+        if (req.message) {
+            const addNoteResp = await this.addNoteToLead(leadId, req.message);
+            if (!addNoteResp.success) {
+                addNoteResp.log();
+            }
+        }
+
         return {
             success: true,
-            log: () => console.info("Added a new People Organization and a Lead"),
+            log: () =>
+                console.info(
+                    'Added a new People Organization and a Lead' + (req.message ? ' with a Note' : ' without a Note')
+                ),
         };
+    }
+
+    async addNoteToLead(leadId: number, content: string): Promise<Response> {
+        try {
+            let opts = AddNoteRequest.constructFromObject({
+                lead_id: leadId,
+                content: content,
+            });
+            const response = await this.notesClient.addNote(opts);
+            if (response.success) {
+                return {
+                    success: true,
+                    log: () => console.info('Successfully added a note to the lead'),
+                };
+            } else {
+                return {
+                    success: false,
+                    error: new Error(JSON.stringify(response)),
+                    log: () => console.error('Request goes wrong -> add Note to the lead'),
+                };
+            }
+        } catch (error) {
+            const ex = error instanceof Error ? error.message : JSON.stringify(error);
+            // console.error(`PipedriveService -> addNoteToLead -> error: ${ex}`);
+
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(ex),
+                log: () => console.error('An error occurred while adding the note to the lead'),
+            };
+        }
     }
 
     // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonsApi.md#addPerson
@@ -125,7 +175,7 @@ export class PipedriveService {
             const personId = personResponse.data?.id;
             if (!personId) {
                 personResponse.log();
-                throw new Error("The new created person has no personId");
+                throw new Error('The new created person has no personId');
             }
 
             try {
@@ -173,7 +223,7 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                log: () => console.info("Successfully added a new People"),
+                log: () => console.info('Successfully added a new People'),
             };
         } catch (error) {
             // Error form addSimplePerson
@@ -183,7 +233,7 @@ export class PipedriveService {
             return {
                 success: false,
                 error: ex,
-                log: () => console.error("Error is happened on addPerson"),
+                log: () => console.error('Error is happened on addPerson'),
             };
         }
     }
@@ -203,7 +253,7 @@ export class PipedriveService {
             const orgId = addSimpleOrgResp.data?.id;
             if (!orgId) {
                 addSimpleOrgResp.log();
-                throw new Error("The new created person has no orgId");
+                throw new Error('The new created person has no orgId');
             }
 
             try {
@@ -227,7 +277,7 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                log: () => console.info("Successfully added a new Organization"),
+                log: () => console.info('Successfully added a new Organization'),
             };
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
@@ -236,7 +286,7 @@ export class PipedriveService {
             return {
                 success: false,
                 error: ex,
-                log: () => console.error("Error is happened on addOrganization"),
+                log: () => console.error('Error is happened on addOrganization'),
             };
         }
     }
@@ -245,7 +295,7 @@ export class PipedriveService {
 export function getRequiredEnvVariable(varName: string): string {
     const value = process.env[varName];
     if (!value) {
-        throw new Error(`now env found for ${varName}`);
+        throw new Error(`no env found for ${varName}`);
     }
     return value;
 }

@@ -1,4 +1,4 @@
-import { LANGUAGE_MAPPER } from './language-mapper';
+import {LANGUAGE_MAPPER} from './language-mapper';
 
 export type LanguageKey = keyof typeof LANGUAGE_MAPPER;
 
@@ -20,7 +20,7 @@ export interface Field<T = unknown> {
     key: string;
     name: string;
     options: T[];
-};
+}
 
 export interface LanguageOption {
     id: number;
@@ -28,61 +28,57 @@ export interface LanguageOption {
 }
 
 export interface LabelField {
-    id: number,
-    label: string,
-    color: string
+    id: number;
+    label: string;
+    color: string;
 }
 
-export interface LeadLabels{
+export interface LeadLabels {
     success: boolean;
-    data: LeadLabel[]
+    data: LeadLabel[];
 }
 
 export interface LeadLabel {
-    id: string, 
-    name: string,
+    id: string;
+    name: string;
 }
 
 // https://github.com/pipedrive/client-nodejs/blob/master/docs/PersonItem.md
 export interface PersonItem {
-    id?: number,
-    company_id?: number,
-    phone?: BasePersonItem[],
-    email?: BasePersonItem[],
-    label?: number,
-    name?: string,
-    first_name?: string,
-    last_name?: string
+    id?: number;
+    company_id?: number;
+    phone?: BasePersonItem[];
+    email?: BasePersonItem[];
+    label?: number;
+    name?: string;
+    first_name?: string;
+    last_name?: string;
 }
 // https://github.com/pipedrive/client-nodejs/blob/master/docs/BasePersonItemPhone.md
 export interface BasePersonItem {
-    value: string,
-    primary: boolean,
-    label: string
+    value: string;
+    primary: boolean;
+    label: string;
 }
 
-export interface UpdatePersonData {
+export interface UpdatePersonData {}
 
-}
-
-export interface AddPerson{
-    addSimplePersonResponse?: PersonItemResponse
-    personLangFieldResponse?: PersonLangFieldResponse
-    addLangForPersonResponse?: Response<unknown> // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
-    personLabelFieldResponse? : LabelFieldResponse
-    addLabelFiledResponse?: Response<unknown> // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
+export interface AddPerson {
+    addSimplePersonResponse?: PersonItemResponse;
+    personLangFieldResponse?: PersonLangFieldResponse;
+    addLangForPersonResponse?: Response<unknown>; // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
+    personLabelFieldResponse?: LabelFieldResponse;
+    addLabelFiledResponse?: Response<unknown>; // https://github.com/pipedrive/client-nodejs/blob/master/docs/UpdatePersonResponse.md
 }
 
 export interface OrganizationItem {
-    id?: number,
-    name?: string,
-    label?: number
+    id?: number;
+    name?: string;
+    label?: number;
 }
 
 export interface AddOrganization {
-    addSimpleOrgResponse?: OrganizationItemResponse
-    orgLabelFieldResponse?: LabelFieldResponse
-    addLabelFiledResponse?: Response<unknown>
+    addSimpleOrgResponse?: OrganizationItemResponse;
+    orgLabelFieldResponse?: LabelFieldResponse;
+    addLabelFiledResponse?: Response<unknown>;
 }
-
-

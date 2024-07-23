@@ -1,16 +1,15 @@
+import {HttpStatusCode} from "axios";
 import {NextFunction, Request, Response, Router} from "express";
 import formidable from "formidable";
-import {TargetManager} from "./services/targetManager";
 import {ContactForm, Target} from "./@types/target";
-import {RateLimiter} from "./services/rateLimiter";
-import validate from "./services/validate";
 import {postBody} from "./models/post";
-import {EmailService} from "./services/email";
 import {CaptchaService} from "./services/captcha";
-import getRedirectUrl from "./util/redirect";
-import {HttpStatusCode} from "axios";
+import {EmailService} from "./services/email";
 import {PipedriveService} from "./services/pipedrive";
-
+import {RateLimiter} from "./services/rateLimiter";
+import {TargetManager} from "./services/targetManager";
+import validate from "./services/validate";
+import getRedirectUrl from "./util/redirect";
 
 const router: Router = Router();
 
@@ -21,6 +20,16 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
         //     return res.status(429).end();
         // }
         console.info("[POST] /api/v1/contact-form");
+
+        // CORS
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Method", "POST");
+        res.setHeader("Access-Control-Allow-Headers", "*");
+
+        if (req.method === "OPTIONS") {
+            return res.status(200).end();
+        }
+
         const form = formidable({});
         form.parse(req, async (err, fields, _) => {
             if (err) {
@@ -32,7 +41,7 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
             try {
                 data = service.validateContactForm(fields);
             } catch (error) {
-                return res.status(HttpStatusCode.BadRequest).json({message: (error as Error).message});
+                return res.status(HttpStatusCode.BadRequest).json({message: "🥴🥴🥴🥴" + (error as Error).message});
             }
 
             try {
@@ -53,13 +62,13 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
 
 /**
  * Check if target exist, validate origin and send CORS headers.
-*/
+ */
 router.use("/:target", async (req: Request, res: Response, next: NextFunction) => {
     // Check if target exist
     if (!TargetManager.targets.has(req.params.target)) {
         return res.sendStatus(404);
     }
-    
+
     //@ts-ignore
     let target: Target = TargetManager.targets.get(req.params.target);
 
