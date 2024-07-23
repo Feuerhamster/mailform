@@ -11,10 +11,12 @@ import getRedirectUrl from "./util/redirect";
 import {HttpStatusCode} from "axios";
 import {PipedriveService} from "./services/pipedrive";
 
+
 const router: Router = Router();
 
 router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
     try {
+        // TODO activate this
         // if (!(await RateLimiter.consume(req.params.target, req.ip))) {
         //     return res.status(429).end();
         // }
@@ -22,7 +24,7 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
         const form = formidable({});
         form.parse(req, async (err, fields, _) => {
             if (err) {
-                return res.status(500).send({message: "Parse Error"}).end();
+                return res.status(HttpStatusCode.InternalServerError).send({message: "Parse Error"}).end();
             }
             const service = new PipedriveService();
             let data: ContactForm;
@@ -35,8 +37,7 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
 
             try {
                 const response = await service.createAllPipedriveItemsForContactForm(data);
-                console.info(`response form createLead -> ${JSON.stringify(response)}`);
-                // TODO update this do  we have success?
+                console.info(`response form createAllPipedriveItemsForContactForm -> ${JSON.stringify(response)}`);
                 if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
                 else res.status(HttpStatusCode.BadRequest).json(response);
             } catch (error) {
@@ -52,13 +53,13 @@ router.post("/api/v1/contact-form", async (req: Request, res: Response) => {
 
 /**
  * Check if target exist, validate origin and send CORS headers.
- */
+*/
 router.use("/:target", async (req: Request, res: Response, next: NextFunction) => {
     // Check if target exist
     if (!TargetManager.targets.has(req.params.target)) {
         return res.sendStatus(404);
     }
-
+    
     //@ts-ignore
     let target: Target = TargetManager.targets.get(req.params.target);
 

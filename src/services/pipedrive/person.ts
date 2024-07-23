@@ -76,20 +76,20 @@ export class PipedrivePersonService {
                 return {
                     success: true,
                     data: personData,
-                    msg: () => console.info("Add a Simple Person successfully, Everything is okay"),
+                    log: () => console.info("Add a Simple Person successfully, Everything is okay"),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    msg: () => console.error("Request goes wrong -> add person"),
+                    log: () => console.error("Request goes wrong -> add person"),
                 };
             }
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("An error occurred while adding the person"),
+                log: () => console.error("An error occurred while adding the person"),
             };
         }
     }
@@ -101,14 +101,14 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: new Error("The language was not passed you cannot set the language"),
-                msg: () => console.error("The language was not passed you cannot set the language"),
+                log: () => console.error("The language was not passed you cannot set the language"),
             };
         }
         if (!LANGUAGE_MAPPER.hasOwnProperty(language as LanguageKey)) {
             return {
                 success: false,
                 error: new Error(`We do not support this language: ${language}`),
-                msg: () => console.error("The language was not passed you cannot set the language"),
+                log: () => console.error("The language was not passed you cannot set the language"),
             };
         }
 
@@ -123,7 +123,7 @@ export class PipedrivePersonService {
                 return {
                     success: true,
                     data: response.data as unknown,
-                    msg: () =>
+                    log: () =>
                         console.info(
                             `Language from the person successfully updated, person_id: ${person_id}, Everything is okay`
                         ),
@@ -132,14 +132,14 @@ export class PipedrivePersonService {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    msg: () => console.error("Request goes wrong -> update person language"),
+                    log: () => console.error("Request goes wrong -> update person language"),
                 };
             }
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("An error occurred while updating the person language"),
+                log: () => console.error("An error occurred while updating the person language"),
             };
         }
     }
@@ -154,7 +154,7 @@ export class PipedrivePersonService {
                 return {
                     success: isValid,
                     data: langField,
-                    msg: () =>
+                    log: () =>
                         isValid
                             ? () => console.info("Language check PASS, Everything is okay")
                             : () =>
@@ -169,13 +169,13 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: new Error(JSON.stringify(response.data)),
-                msg: () => console.error("Request goes wrong -> getPersonField for the Language goes wrong"),
+                log: () => console.error("Request goes wrong -> getPersonField for the Language goes wrong"),
             };
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("An error occurred while checking the language field"),
+                log: () => console.error("An error occurred while checking the language field"),
             };
         }
     }
@@ -191,21 +191,21 @@ export class PipedrivePersonService {
                 return {
                     success: true,
                     data: response.data,
-                    msg: () =>
+                    log: () =>
                         console.info(`Inbound Webform successfully updated to the person, person_id: ${person_id}`),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    msg: () => console.error("Request goes wrong -> update person webform inbound label"),
+                    log: () => console.error("Request goes wrong -> update person webform inbound label"),
                 };
             }
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () =>
+                log: () =>
                     console.error(
                         "An error occurred while updating the person label, specific add the Inbound webform"
                     ),
@@ -224,7 +224,7 @@ export class PipedrivePersonService {
                 return {
                     success: isValid,
                     data: labelField,
-                    msg: isValid
+                    log: isValid
                         ? () => console.info("Label check PASS, Everything is okay")
                         : () =>
                               console.error(
@@ -238,13 +238,13 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: new Error(JSON.stringify(response.data)),
-                msg: () => console.error("Request goes wrong -> check Label for the label id goes wrong"),
+                log: () => console.error("Request goes wrong -> check Label for the label id goes wrong"),
             };
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("An error occurred while checking the label id"),
+                log: () => console.error("An error occurred while checking the label id"),
             };
         }
     }
@@ -259,7 +259,7 @@ export class PipedrivePersonService {
                 return {
                     success: true,
                     data: response.data as unknown,
-                    msg: () =>
+                    log: () =>
                         console.info(
                             `Organization successfully connected with the Person org_id: ${organizationId}, person_id: ${personId}`
                         ),
@@ -269,13 +269,13 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: new Error(JSON.stringify(response.data)),
-                msg: () => console.error("Request goes wrong -> we can't connect organization with the person"),
+                log: () => console.error("Request goes wrong -> we can't connect organization with the person"),
             };
         } catch (error) {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("An error occurred while connecting organization with the person"),
+                log: () => console.error("An error occurred while connecting organization with the person"),
             };
         }
     }

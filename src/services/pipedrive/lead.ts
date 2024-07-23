@@ -51,13 +51,14 @@ export class PipedriveLeadService {
             if (response.success === true) {
                 return {
                     success: true,
-                    msg: () => console.info("Successfully created a lead, Everything is okay"),
+                    data: response.data,
+                    log: () => console.info("Successfully created a lead, Everything is okay"),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    msg: () => console.error("Request goes wrong -> add Lead"),
+                    log: () => console.error("Request goes wrong -> add Lead"),
                 };
             }
         } catch (error) {
@@ -65,7 +66,7 @@ export class PipedriveLeadService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(errorMessage),
-                msg: () => console.error("An error occurred while adding the lead"),
+                log: () => console.error("An error occurred while adding the lead"),
             };
         }
     }

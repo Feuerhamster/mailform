@@ -22,7 +22,7 @@ describe('Pipedrive Service Tests', () => {
         await removeCreatedPersons(personIdsToRemove, personClient);
     })
 
-    it.skip('should add a new create all needed pipedrive item for the contact form', async () => {
+    it('should add a new create all needed pipedrive item for the contact form', async () => {
         const contactForm: ContactForm = {
             firstname: 'JEST Patrick',
             lastname: 'Hornbach',

@@ -15,7 +15,7 @@ import {AddOrganization, AddPerson, OrganizationItemResponse, Response} from "./
 import {PipedriveOrganizationService} from "./pipedrive/organization";
 import {PipedriveLeadService} from "./pipedrive/lead";
 
-// TODO check every create Person Org or Lead has the info account set.
+// TODO Test for logs
 export const PIPEDRIVE_INFO_ACC_ID = 13132618;
 
 const apiClient = new ApiClient();
@@ -24,6 +24,7 @@ const apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = getRequiredEnvVariable("PIPEDRIVE_API_SECRET");
 
 export class PipedriveService {
+
     // TODO use a constructor
     leadClient = new LeadsApi(apiClient);
     leadLabelClient = new LeadLabelsApi(apiClient);
@@ -32,6 +33,7 @@ export class PipedriveService {
     orgClient = new OrganizationsApi(apiClient);
     orgFieldClient = new OrganizationFieldsApi(apiClient);
     personService = new PipedrivePersonService();
+    // TODO implement the Notes Service
 
     validateContactForm(data: any): ContactForm {
         if (data.firstname === null) throw new Error("firstname is empty");
@@ -47,7 +49,7 @@ export class PipedriveService {
         let orgId: number | undefined;
         try {
             const addPerReq = await this.addPerson(req);
-            addPerReq.msg();
+            addPerReq.log();
             if (!addPerReq.success) throw addPerReq.error;
 
             if (!addPerReq.data?.addSimplePersonResponse?.data?.id)
@@ -57,13 +59,13 @@ export class PipedriveService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                msg: () => console.error("We have a Problem on add an new Person the howl process are broken."),
+                log: () => console.error("We have a Problem on add an new Person the howl process are broken."),
             };
         }
 
         try {
             const addOrgResp = await this.addOrganization(req);
-            addOrgResp.msg();
+            addOrgResp.log();
             if (!addOrgResp.success) throw addOrgResp.error;
 
             if (!addOrgResp.data?.addSimpleOrgResponse?.data?.id) {
@@ -79,7 +81,7 @@ export class PipedriveService {
             if (orgId) {
                 const connectionResp = await this.personService.connectOrgAndPerson(this.personClient, personId, orgId);
                 if (!connectionResp.success) {
-                    connectionResp.msg();
+                    connectionResp.log();
                     throw connectionResp.error;
                 }
             } else throw new Error("orgId is null or undefined wie can´t connect the org with the person");
@@ -91,7 +93,7 @@ export class PipedriveService {
         try {
             const leadResp = await new PipedriveLeadService().addLead(this.leadClient, this.leadLabelClient, req, personId, orgId);
             if (!leadResp.success) {
-                leadResp.msg();
+                leadResp.log();
                 throw leadResp.error;
             }
         } catch (error) {
@@ -101,7 +103,7 @@ export class PipedriveService {
 
         return {
             success: true,
-            msg: () => console.info("Added a new People Organization and a Lead"),
+            log: () => console.info("Added a new People Organization and a Lead"),
         };
     }
 
@@ -116,13 +118,13 @@ export class PipedriveService {
             );
 
             if (!personResponse.success) {
-                personResponse.msg();
+                personResponse.log();
                 throw personResponse.error;
             }
             returnData.addSimplePersonResponse = personResponse;
             const personId = personResponse.data?.id;
             if (!personId) {
-                personResponse.msg();
+                personResponse.log();
                 throw new Error("The new created person has no personId");
             }
 
@@ -139,9 +141,9 @@ export class PipedriveService {
                 if (!addLanguageForPersonResponse.success) throw addLanguageForPersonResponse.error;
             } catch (error) {
                 // Here we log the functions checkLanguage and addLanguageForPerson
-                personResponse.msg();
-                returnData.personLangFieldResponse?.msg();
-                returnData.addLabelFiledResponse?.msg();
+                personResponse.log();
+                returnData.personLangFieldResponse?.log();
+                returnData.addLabelFiledResponse?.log();
                 console.warn(
                     `We cant add the Language for the Person with ID: ${personId}, because: ${(error as Error).message}`
                 );
@@ -158,9 +160,9 @@ export class PipedriveService {
                 returnData.addLabelFiledResponse = addInboundLabelToPersonResponse;
                 if (!addInboundLabelToPersonResponse.success) throw addInboundLabelToPersonResponse.error;
             } catch (error) {
-                personResponse.msg();
-                returnData.personLabelFieldResponse?.msg();
-                returnData.addLabelFiledResponse?.msg();
+                personResponse.log();
+                returnData.personLabelFieldResponse?.log();
+                returnData.addLabelFiledResponse?.log();
                 console.warn(
                     `We can't add the Inbound Form Label for Person with ID: ${personId}, because: ${
                         (error as Error).message
@@ -171,7 +173,7 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                msg: () => console.info("Successfully added a new People"),
+                log: () => console.info("Successfully added a new People"),
             };
         } catch (error) {
             // Error form addSimplePerson
@@ -181,7 +183,7 @@ export class PipedriveService {
             return {
                 success: false,
                 error: ex,
-                msg: () => console.error("Error is happened on addPerson"),
+                log: () => console.error("Error is happened on addPerson"),
             };
         }
     }
@@ -194,27 +196,27 @@ export class PipedriveService {
             const addSimpleOrgResp = await service.addSimpleOrganization(this.orgClient, req);
 
             if (!addSimpleOrgResp.success) {
-                addSimpleOrgResp.msg();
+                addSimpleOrgResp.log();
                 throw addSimpleOrgResp.error;
             }
             returnData.addSimpleOrgResponse = addSimpleOrgResp;
             const orgId = addSimpleOrgResp.data?.id;
             if (!orgId) {
-                addSimpleOrgResp.msg();
+                addSimpleOrgResp.log();
                 throw new Error("The new created person has no orgId");
             }
 
             try {
                 const checkOrgLabelFiledResponse = await service.checkLabelId(this.orgFieldClient);
                 returnData.orgLabelFieldResponse = checkOrgLabelFiledResponse;
-                if (!checkOrgLabelFiledResponse.success) throw checkOrgLabelFiledResponse.error as Error;
+                if (!checkOrgLabelFiledResponse.success) throw checkOrgLabelFiledResponse.error;
                 const addInboundLabelToOrgResponse = await service.addInboundLabelToOrg(this.orgClient, orgId);
                 returnData.addLabelFiledResponse = addInboundLabelToOrgResponse;
                 if (!addInboundLabelToOrgResponse.success) throw addInboundLabelToOrgResponse.error;
             } catch (error) {
-                addSimpleOrgResp?.msg();
-                returnData.orgLabelFieldResponse?.msg();
-                returnData.addLabelFiledResponse?.msg();
+                addSimpleOrgResp?.log();
+                returnData.orgLabelFieldResponse?.log();
+                returnData.addLabelFiledResponse?.log();
                 console.warn(
                     `We can't add the Inbound Form Label for Org with ID: ${orgId}, because: ${
                         (error as Error).message
@@ -225,7 +227,7 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                msg: () => console.info("Successfully added a new Organization"),
+                log: () => console.info("Successfully added a new Organization"),
             };
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
@@ -234,7 +236,7 @@ export class PipedriveService {
             return {
                 success: false,
                 error: ex,
-                msg: () => console.error("Error is happened on addOrganization"),
+                log: () => console.error("Error is happened on addOrganization"),
             };
         }
     }

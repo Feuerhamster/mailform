@@ -12,7 +12,7 @@ export interface Response<T = unknown> {
     success: boolean;
     data?: T;
     error?: Error;
-    msg: () => void;
+    log: () => void;
 }
 
 export interface Field<T = unknown> {
