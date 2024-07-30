@@ -31,9 +31,11 @@ if (process.env.ENABLE_PIPEDRIVE) {
             console.info('[POST] /contact-form');
 
             // CORS
+            const origin = `${req.protocol}://${req.get('host')}`;
+
             const corsWhiteList = getRequiredEnvVariable('CORS_ORIGIN').split(',');
-            if (corsWhiteList.includes(req.headers.origin)) {
-                res.header('Access-Control-Allow-Origin', req.headers.origin);
+            if (corsWhiteList.includes(origin)) {
+                res.header('Access-Control-Allow-Origin', origin);
                 res.setHeader('Access-Control-Allow-Headers', '*');
             }
 
