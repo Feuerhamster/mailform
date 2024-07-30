@@ -4,6 +4,9 @@ import {AddressInfo} from "net";
 import {TargetManager} from "./services/targetManager";
 import routes from "./router";
 
+
+// TODO add health check endpoint
+
 // Start express app
 const port = process.env.PORT || 7000;
 const trustProxy: boolean = process.env.PROXY === "true";

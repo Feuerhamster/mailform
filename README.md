@@ -96,10 +96,11 @@ They are JSON files placed in the `/targets` directory.
 -   `origin` _optional_ | A HTTP origin that is used for CORS and to restrict access. Default is \* if not set.
 -   `recipients` _required_ | An array of email addresses which should receive the email.
 -   `from` _optional_ | The "from" field of an email. This is used as fallback if no "from" is provided in the request.
+-   `subjectPrefix` _optional_ | A target-wide prefix for the email subject.
 -   `key` _optional_ | A string used as API key if you want to restrict access to this target.
 -   `redirect` _optional_:
-    -   `success` _optional_: A valid URL to redirect the user if the mail was sent successful.
-    -   `error` _optional_: A valid URL to redirect the user if the mail can't be sent due to an error.
+    -   `success` _optional_: A valid relative or absolute URL to redirect the user if the mail was sent successful.
+    -   `error` _optional_: A valid relative or absolute URL to redirect the user if the mail can't be sent due to an error.
 -   `rateLimit` _required_:
     -   `timespan` _required_ | Timespan (in seconds) for the rate limiter to reset.
     -   `requests` _required_ | Allowed amount of requests in the given timespan.
@@ -118,6 +119,7 @@ Whether as formular data or json, the fields are the same.
 -   `from` _optional_ | The email address of the sender. If this filed is not set, the "from" field of your target will be used.
 -   `firstName` _optional_ | A classic first name filed which will be attached to the "from" field of the email.
 -   `lastName` _optional_ | A classic last name filed which will be attached to the "from" field of the email.
+-   `subjectPrefix` _optional_ | A Prefix for the email subject.
 -   `subject` _required_ | The email subject.
 -   `body` _required_ | The email body (supports HTML).
 -   `g-recaptcha-response` _only required if target use captcha_ | Field for ReCaptcha response.
@@ -147,6 +149,7 @@ If you use an API request, you have to fill it manually.
     <input type="email" name="from" placeholder="Sender's email address" />
     <input type="text" name="firstName" placeholder="First name" />
     <input type="text" name="lastName" placeholder="Last name" />
+    <input type="hidden" name="subjectPrefix" value="[App-Question] " />
     <input type="text" name="subject" placeholder="Subject" />
     <div class="g-recaptcha" data-sitekey="your_site_key"></div>
     <textarea name="body" placeholder="Your message"></textarea>
@@ -160,6 +163,8 @@ To work properly, you may want to configure a redirect in the target.
 Simply make a request to `/:target` (replace with your target's file name).
 If you have set an API key, add the HTTP Authorization header with type `Bearer` and then the key.
 Make sure to also use the right origin (if not set automatically because the request is from a backend).
+
+> ⚠ Since the file upload feature got added, there is an Issue with `application/json`. Please use multipart form or form urlencoded for API requests. I am working on a rewrite where this gets fixed.
 
 **Example request:**
 

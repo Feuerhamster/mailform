@@ -1,17 +1,20 @@
+import {LanguageKey} from "../services/pipedrive/types";
+
 export interface Target {
     smtp: string;
     origin: string;
     recipients: string[];
     from?: string;
+    subjectPrefix?: string;
     redirect?: Redirects;
     key?: string;
     rateLimit?: TargetRateLimit;
-    captcha?: TargetCaptchaOptions
+    captcha?: TargetCaptchaOptions;
 }
 
 export interface Redirects {
     success?: string;
-    error?: string
+    error?: string;
 }
 
 export interface TargetRateLimit {
@@ -26,5 +29,14 @@ export interface TargetCaptchaOptions {
 
 export enum CaptchaProvider {
     RECAPTCHA = "recaptcha",
-    HCAPTCHA = "hcaptcha"
+    HCAPTCHA = "hcaptcha",
+}
+
+export interface ContactForm {
+    name: string;
+    organization: string;
+    email: string;
+    phone?: string;
+    message?: string;
+    language?: LanguageKey;
 }

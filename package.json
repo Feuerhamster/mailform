@@ -5,25 +5,35 @@
     "description": "The minimalistic email relay for contact forms and more!",
     "main": "dist/main.js",
     "scripts": {
-        "start": "node dist/main.js",
-        "build": "tsc"
+        "start": "node dist/src/main.js",
+        "build": "tsc",
+        "test": "jest"
     },
     "keywords": [],
     "author": "Feuerhamster",
     "license": "Apache-2.0",
     "dependencies": {
-        "axios": "^0.21.1",
-        "express": "^4.17.1",
-        "formidable": "^2.1.1",
-        "nodemailer": "^6.6.0",
-        "rate-limiter-flexible": "^2.2.2",
+        "axios": "^1.6.7",
+        "dotenv": "^16.4.5",
+        "express": "^4.18.2",
+        "formidable": "^2.1.2",
+        "nodemailer": "^6.9.9",
+        "pipedrive": "^23.0.0",
+        "rate-limiter-flexible": "^5.0.0",
+        "ts-node": "^10.9.2",
+        "uuid": "^10.0.0",
         "validate.js": "^0.13.1"
     },
     "devDependencies": {
-        "@types/express": "^4.17.11",
-        "@types/formidable": "^2.0.5",
-        "@types/nodemailer": "^6.4.1",
-        "typescript": "^4.3.2"
+        "@types/express": "^4.17.21",
+        "@types/formidable": "^2.0.6",
+        "@types/jest": "^29.5.12",
+        "@types/nodemailer": "^6.4.14",
+        "@types/uuid": "^9.0.8",
+        "jest": "^29.7.0",
+        "jest-extended": "^4.0.2",
+        "ts-jest": "^29.2.0",
+        "typescript": "^5.3.3"
     },
     "repository": {
         "type": "git",

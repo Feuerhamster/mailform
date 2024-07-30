@@ -5,9 +5,11 @@
         "sourceMap": true,
         "moduleResolution": "node",
         "esModuleInterop": true,
-        "outDir": "dist"
+        "outDir": "dist",
+        "allowSyntheticDefaultImports": true,
+        "types": ["jest", "node"],
+        "strict": false
     },
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["src", "jest.setup.ts"],
+    "exclude": ["node_modules"]
 }
