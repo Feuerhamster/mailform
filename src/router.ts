@@ -5,6 +5,7 @@ import {ContactForm, Target} from './@types/target';
 import {postBody} from './models/post';
 import {CaptchaService} from './services/captcha';
 import {EmailService} from './services/email';
+import {getRequiredEnvVariable} from './services/pipedrive';
 import {RateLimiter} from './services/rateLimiter';
 import {TargetManager} from './services/targetManager';
 import validate from './services/validate';
@@ -30,8 +31,13 @@ if (process.env.ENABLE_PIPEDRIVE) {
             console.info('[POST] /contact-form');
 
             // CORS
-            res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-            res.setHeader('Access-Control-Allow-Headers', '*');
+            const corsWhiteList = getRequiredEnvVariable('CORS_ORIGIN').split(',');
+            if (corsWhiteList.includes(req.headers.origin)) {
+                res.header('Access-Control-Allow-Origin', req.headers.origin);
+                res.setHeader('Access-Control-Allow-Headers', '*');
+            }
+
+            // res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
 
             if (req.method === 'OPTIONS') {
                 return res.status(200).end();
@@ -161,7 +167,7 @@ router.post('/:target', async (req: Request, res: Response) => {
             const fieldFirstName = fields['firstName'] instanceof Array ? fields['firstName'][0] : fields['firstName'];
             const fieldLastName = fields['lastName'] instanceof Array ? fields['lastName'][0] : fields['lastName'];
             const fieldSubjectPrefix =
-                fields['subjectPrefix'] instanceof Array ? fields['subjectPrefix'][0] : (fields['subjectPrefix'] ?? '');
+                fields['subjectPrefix'] instanceof Array ? fields['subjectPrefix'][0] : fields['subjectPrefix'] ?? '';
             const subject =
                 (target.subjectPrefix ?? '') +
                 fieldSubjectPrefix +
