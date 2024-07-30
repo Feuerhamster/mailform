@@ -4,11 +4,7 @@ FROM node:lts-alpine AS builder
 RUN mkdir /app
 WORKDIR /app
 
-# copy configs folder
-COPY package*.json ./
-COPY tsconfig.json ./
-# copy source code to /app/src folder
-COPY src src
+COPY . .
 
 # install dependencies (https://docs.npmjs.com/cli/v7/commands/npm-ci)
 RUN npm ci

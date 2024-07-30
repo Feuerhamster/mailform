@@ -68,6 +68,10 @@ if (process.env.ENABLE_PIPEDRIVE) {
     });
 }
 
+router.get('/status/health', async (req: Request, res: Response) => {
+    return res.status(200).send({status: 'ok'});
+});
+
 /**
  * Check if target exist, validate origin and send CORS headers.
  */
