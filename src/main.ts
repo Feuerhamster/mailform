@@ -28,3 +28,10 @@ const server: Server = app.listen(port, () => {
     let {port} = server.address() as AddressInfo;
     console.log('MailForm started on port ' + port);
 });
+
+process.on('SIGTERM', () => {
+    console.debug('SIGTERM signal received: closing HTTP server');
+    server.close(() => {
+        console.debug('HTTP server closed');
+    });
+});
