@@ -30,12 +30,23 @@ if (process.env.ENABLE_PIPEDRIVE) {
             // }
             console.info('[POST] /contact-form');
 
+            let referer = req.get('referer');
+            if (referer) {
+                // Remove trailing slash if it exists
+                referer = referer.replace(/\/$/, '');
+            }
+            console.log('REFERER', referer);
+
             // CORS
-            const origin = `${req.protocol}://${req.get('host')}`;
+            // const origin = `${req.protocol}://${req.get('host')}`;
+            // console.log('combined origin', origin);
 
             const corsWhiteList = getRequiredEnvVariable('CORS_ORIGIN').split(',');
-            if (corsWhiteList.includes(origin)) {
-                res.header('Access-Control-Allow-Origin', origin);
+            console.log(`corsWhiteList -> ${corsWhiteList}`);
+            console.log(`corsWhiteList.includes(referer) -> ${corsWhiteList.includes(referer)}`);
+            if (corsWhiteList.includes(referer)) {
+                res.header('Access-Control-Allow-Origin', referer);
+                console.log(`res.header('Access-Control-Allow-Origin') -> ${res.get('Access-Control-Allow-Origin')}`);
                 res.setHeader('Access-Control-Allow-Headers', '*');
             }
 
