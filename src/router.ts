@@ -5,7 +5,6 @@ import {ContactForm, Target} from './@types/target';
 import {postBody} from './models/post';
 import {CaptchaService} from './services/captcha';
 import {EmailService} from './services/email';
-import {PipedriveService} from './services/pipedrive';
 import {RateLimiter} from './services/rateLimiter';
 import {TargetManager} from './services/targetManager';
 import validate from './services/validate';
@@ -13,52 +12,61 @@ import getRedirectUrl from './util/redirect';
 
 const router: Router = Router();
 
-router.post('/api/v1/contact-form', async (req: Request, res: Response) => {
-    try {
-        // TODO activate this
-        // if (!(await RateLimiter.consume(req.params.target, req.ip))) {
-        //     return res.status(429).end();
-        // }
-        console.info('[POST] /api/v1/contact-form');
+if (process.env.ENABLE_PIPEDRIVE) {
+    const {PipedriveService} = require('./services/pipedrive');
+    const pipedriveTarget = 'pipedrive-contact-form';
 
-        // CORS
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Method', 'POST');
-        res.setHeader('Access-Control-Allow-Headers', '*');
+    RateLimiter.registerTarget(pipedriveTarget, {
+        requests: 3,
+        timespan: 300,
+    });
 
-        if (req.method === 'OPTIONS') {
-            return res.status(200).end();
+    router.post('/pipe/contact-form', async (req: Request, res: Response) => {
+        try {
+            // TODO activate this
+            // if (!(await RateLimiter.consume(pipedriveTarget, req.ip))) {
+            //     return res.status(429).end();
+            // }
+            console.info('[POST] /contact-form');
+
+            // CORS
+            res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+            res.setHeader('Access-Control-Allow-Headers', '*');
+
+            if (req.method === 'OPTIONS') {
+                return res.status(200).end();
+            }
+
+            const form = formidable({});
+            form.parse(req, async (err, fields, _) => {
+                if (err) {
+                    return res.status(HttpStatusCode.InternalServerError).send({message: 'Parse Error'}).end();
+                }
+                const service = new PipedriveService();
+                let data: ContactForm;
+
+                try {
+                    data = service.validateContactForm(fields);
+                } catch (error) {
+                    return res.status(HttpStatusCode.BadRequest).json({message: (error as Error).message});
+                }
+
+                try {
+                    const response = await service.createAllPipedriveItemsForContactForm(data);
+                    console.info(`response form createAllPipedriveItemsForContactForm -> ${JSON.stringify(response)}`);
+                    if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
+                    else res.status(HttpStatusCode.BadRequest).json(response);
+                } catch (error) {
+                    return res.status(HttpStatusCode.InternalServerError).json({message: (error as Error).message});
+                }
+            });
+        } catch (e: any) {
+            console.error('[POST] /contact-form -> ERROR: unhandled exception ist happened');
+            console.error(e);
+            res.status(HttpStatusCode.InternalServerError).json(e);
         }
-
-        const form = formidable({});
-        form.parse(req, async (err, fields, _) => {
-            if (err) {
-                return res.status(HttpStatusCode.InternalServerError).send({message: 'Parse Error'}).end();
-            }
-            const service = new PipedriveService();
-            let data: ContactForm;
-
-            try {
-                data = service.validateContactForm(fields);
-            } catch (error) {
-                return res.status(HttpStatusCode.BadRequest).json({message: (error as Error).message});
-            }
-
-            try {
-                const response = await service.createAllPipedriveItemsForContactForm(data);
-                console.info(`response form createAllPipedriveItemsForContactForm -> ${JSON.stringify(response)}`);
-                if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
-                else res.status(HttpStatusCode.BadRequest).json(response);
-            } catch (error) {
-                return res.status(HttpStatusCode.InternalServerError).json({message: (error as Error).message});
-            }
-        });
-    } catch (e: any) {
-        console.error('[POST] /api/v1/contact-form -> ERROR: unhandled exception ist happened');
-        console.error(e);
-        res.status(HttpStatusCode.InternalServerError).json(e);
-    }
-});
+    });
+}
 
 /**
  * Check if target exist, validate origin and send CORS headers.
@@ -149,7 +157,7 @@ router.post('/:target', async (req: Request, res: Response) => {
             const fieldFirstName = fields['firstName'] instanceof Array ? fields['firstName'][0] : fields['firstName'];
             const fieldLastName = fields['lastName'] instanceof Array ? fields['lastName'][0] : fields['lastName'];
             const fieldSubjectPrefix =
-                fields['subjectPrefix'] instanceof Array ? fields['subjectPrefix'][0] : fields['subjectPrefix'] ?? '';
+                fields['subjectPrefix'] instanceof Array ? fields['subjectPrefix'][0] : (fields['subjectPrefix'] ?? '');
             const subject =
                 (target.subjectPrefix ?? '') +
                 fieldSubjectPrefix +
