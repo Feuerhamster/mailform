@@ -1,6 +1,7 @@
 import {AddLeadRequest} from 'pipedrive';
 import {ContactForm} from '../../@types/target';
 import {PIPEDRIVE_INFO_ACC_ID} from '../pipedrive';
+import logger from './logger';
 import {LeadLabel, LeadLabels, Response} from './types';
 
 interface LeadOptions {
@@ -43,7 +44,7 @@ export class PipedriveLeadService {
                 throw new Error(`getLeadLabels request failed or validation failed, leadLabelResp: ${leadLabelResp}`);
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            console.error(`[Error] with getLeadLabels, error: ${ex.message}`);
+            logger.error(`[Error] with getLeadLabels, error: ${ex.message}`);
         }
 
         const opts = AddLeadRequest.constructFromObject(opt);
@@ -54,13 +55,13 @@ export class PipedriveLeadService {
                 return {
                     success: true,
                     data: response.data,
-                    log: () => console.info('Successfully created a lead, Everything is okay'),
+                    log: () => logger.info('Successfully created a lead, Everything is okay'),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response.data)),
-                    log: () => console.error('Request goes wrong -> add Lead'),
+                    log: () => logger.error('Request goes wrong -> add Lead'),
                 };
             }
         } catch (error) {
@@ -68,7 +69,7 @@ export class PipedriveLeadService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(errorMessage),
-                log: () => console.error('An error occurred while adding the lead'),
+                log: () => logger.error('An error occurred while adding the lead'),
             };
         }
     }

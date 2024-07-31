@@ -6,6 +6,7 @@ import {postBody} from './models/post';
 import {CaptchaService} from './services/captcha';
 import {EmailService} from './services/email';
 import {getRequiredEnvVariable} from './services/pipedrive';
+import logger from './services/pipedrive/logger';
 import {RateLimiter} from './services/rateLimiter';
 import {TargetManager} from './services/targetManager';
 import validate from './services/validate';
@@ -28,29 +29,22 @@ if (process.env.ENABLE_PIPEDRIVE) {
             // if (!(await RateLimiter.consume(pipedriveTarget, req.ip))) {
             //     return res.status(429).end();
             // }
-            console.info('[POST] /contact-form');
 
             let referer = req.get('referer');
             if (referer) {
                 // Remove trailing slash if it exists
                 referer = referer.replace(/\/$/, '');
             }
-            console.log('REFERER', referer);
 
             // CORS
-            // const origin = `${req.protocol}://${req.get('host')}`;
-            // console.log('combined origin', origin);
-
             const corsWhiteList = getRequiredEnvVariable('CORS_ORIGIN').split(',');
-            console.log(`corsWhiteList -> ${corsWhiteList}`);
-            console.log(`corsWhiteList.includes(referer) -> ${corsWhiteList.includes(referer)}`);
             if (corsWhiteList.includes(referer)) {
                 res.header('Access-Control-Allow-Origin', referer);
-                console.log(`res.header('Access-Control-Allow-Origin') -> ${res.get('Access-Control-Allow-Origin')}`);
                 res.setHeader('Access-Control-Allow-Headers', '*');
+            } else {
+                logger.info(`[POST] /contact-form -> ERROR: Origin not allowed`, {referer});
+                return res.status(HttpStatusCode.Forbidden).json({message: 'Origin not allowed'}).end();
             }
-
-            // res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
 
             if (req.method === 'OPTIONS') {
                 return res.status(200).end();
@@ -61,27 +55,36 @@ if (process.env.ENABLE_PIPEDRIVE) {
                 if (err) {
                     return res.status(HttpStatusCode.InternalServerError).send({message: 'Parse Error'}).end();
                 }
+                // sendEmail is a honeypot for bots
+                if (fields['sendEmail']) {
+                    logger.info('Honeypot field sendEmail was filled out.', {time: new Date().toString(), fields, req});
+                    return res.status(400).send({message: 'human verification failed'}).end();
+                }
+
                 const service = new PipedriveService();
                 let data: ContactForm;
 
                 try {
                     data = service.validateContactForm(fields);
                 } catch (error) {
+                    logger.info(`[POST] /contact-form -> Form field validation failed`, {error});
                     return res.status(HttpStatusCode.BadRequest).json({message: (error as Error).message});
                 }
 
                 try {
                     const response = await service.createAllPipedriveItemsForContactForm(data);
-                    console.info(`response form createAllPipedriveItemsForContactForm -> ${JSON.stringify(response)}`);
+                    logger.info(`[POST] /contact-form -> response from createAllPipedriveItemsForContactForm`, {
+                        response,
+                    });
                     if (response.success) res.status(HttpStatusCode.Created).json({data: response.data});
                     else res.status(HttpStatusCode.BadRequest).json(response);
                 } catch (error) {
+                    logger.info(`[POST] /contact-form -> ERROR: createAllPipedriveItemsForContactForm failed`, {error});
                     return res.status(HttpStatusCode.InternalServerError).json({message: (error as Error).message});
                 }
             });
         } catch (e: any) {
-            console.error('[POST] /contact-form -> ERROR: unhandled exception ist happened');
-            console.error(e);
+            logger.info(`[POST] /contact-form -> ERROR: unhandled exception ist happened`, {error: e});
             res.status(HttpStatusCode.InternalServerError).json(e);
         }
     });
@@ -150,7 +153,7 @@ router.post('/:target', async (req: Request, res: Response) => {
         } else {
             // sendEmail is a honeypot for bots
             if (fields['sendEmail']) {
-                console.info('Honeypot field sendEmail was filled out. * time: ' + new Date().toString());
+                logger.info('Honeypot field sendEmail was filled out.', {time: new Date().toString(), fields, req});
                 if (target.redirect?.error) return res.redirect(target.redirect.error);
                 return res.status(400).send({message: 'human verification failed'}).end();
             }

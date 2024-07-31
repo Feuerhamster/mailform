@@ -12,6 +12,7 @@ import {
 } from 'pipedrive';
 import {ContactForm} from '../@types/target';
 import {PipedriveLeadService} from './pipedrive/lead';
+import logger from './pipedrive/logger';
 import {PipedriveOrganizationService} from './pipedrive/organization';
 import {PipedrivePersonService} from './pipedrive/person';
 import {AddOrganization, AddPerson, Response} from './pipedrive/types';
@@ -44,7 +45,7 @@ export class PipedriveService {
     }
 
     async createAllPipedriveItemsForContactForm(req: ContactForm): Promise<Response> {
-        console.info(`PipedriveService -> createLead -> for ${req.name} ${req.email}`);
+        logger.info(`PipedriveService -> createLead -> for ${req.name} ${req.email}`);
         let personId: number | undefined;
         let orgId: number | undefined;
         let leadId: number | undefined;
@@ -57,6 +58,7 @@ export class PipedriveService {
                 throw new Error('Person id is undefined, unexpected behavior');
             personId = addPerReq.data?.addSimplePersonResponse?.data?.id;
         } catch (error) {
+            logger.error(`PipedriveService -> createAllPipedriveItemsForContactForm -> addPerson -> error: ${error}`);
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
@@ -70,12 +72,15 @@ export class PipedriveService {
             if (!addOrgResp.success) throw addOrgResp.error;
 
             if (!addOrgResp.data?.addSimpleOrgResponse?.data?.id) {
+                logger.warn('Organization id is undefined, unexpected behavior');
                 throw new Error('Organization id is undefined, unexpected behavior');
             }
             orgId = addOrgResp.data?.addSimpleOrgResponse?.data?.id;
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            console.error(`[Error] add a new organization, error: ${ex.message}`);
+            logger.error(
+                `PipedriveService -> createAllPipedriveItemsForContactForm -> addOrganization -> error: ${ex}`
+            );
         }
 
         try {
@@ -85,7 +90,10 @@ export class PipedriveService {
                     connectionResp.log();
                     throw connectionResp.error;
                 }
-            } else throw new Error('orgId is null or undefined wie can´t connect the org with the person');
+            } else {
+                logger.error('orgId is null or undefined wie cant connect the org with the person');
+                throw new Error('orgId is null or undefined wie cant connect the org with the person');
+            }
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
             console.error(`[Error] connection between organization and person, error: ${ex.message}`);
@@ -120,7 +128,7 @@ export class PipedriveService {
         return {
             success: true,
             log: () =>
-                console.info(
+                logger.info(
                     'Added a new People Organization and a Lead' + (req.message ? ' with a Note' : ' without a Note')
                 ),
         };
@@ -136,23 +144,23 @@ export class PipedriveService {
             if (response.success) {
                 return {
                     success: true,
-                    log: () => console.info('Successfully added a note to the lead'),
+                    log: () => logger.info('Successfully added a note to the lead'),
                 };
             } else {
                 return {
                     success: false,
                     error: new Error(JSON.stringify(response)),
-                    log: () => console.error('Request goes wrong -> add Note to the lead'),
+                    log: () => logger.error('Request goes wrong -> add Note to the lead'),
                 };
             }
         } catch (error) {
             const ex = error instanceof Error ? error.message : JSON.stringify(error);
-            // console.error(`PipedriveService -> addNoteToLead -> error: ${ex}`);
+            logger.error(`PipedriveService -> addNoteToLead`, {error: ex});
 
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(ex),
-                log: () => console.error('An error occurred while adding the note to the lead'),
+                log: () => logger.error('An error occurred while adding the note to the lead'),
             };
         }
     }
@@ -277,16 +285,16 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                log: () => console.info('Successfully added a new Organization'),
+                log: () => logger.info('Successfully added a new Organization'),
             };
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
             // TODO write a test for the log statement
-            console.error(`[Error] add a new Organization, error: ${ex.message}`);
+            logger.error(`[Error] add a new Organization, error: ${ex.message}`);
             return {
                 success: false,
                 error: ex,
-                log: () => console.error('Error is happened on addOrganization'),
+                log: () => logger.error('Error is happened on addOrganization'),
             };
         }
     }
@@ -295,6 +303,7 @@ export class PipedriveService {
 export function getRequiredEnvVariable(varName: string): string {
     const value = process.env[varName];
     if (!value) {
+        logger.error(`no env found for ${varName}`);
         throw new Error(`no env found for ${varName}`);
     }
     return value;

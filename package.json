@@ -18,6 +18,8 @@
         "express": "^4.18.2",
         "formidable": "^2.1.2",
         "nodemailer": "^6.9.9",
+        "pino": "^9.3.2",
+        "pino-http": "^10.2.0",
         "pipedrive": "^23.0.0",
         "rate-limiter-flexible": "^5.0.0",
         "ts-node": "^10.9.2",
