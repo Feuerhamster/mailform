@@ -43,8 +43,7 @@ export class PipedriveLeadService {
             } else
                 throw new Error(`getLeadLabels request failed or validation failed, leadLabelResp: ${leadLabelResp}`);
         } catch (error) {
-            const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            logger.error(`[Error] with getLeadLabels, error: ${ex.message}`);
+            logger.error(`[Error] with getLeadLabels`, {error});
         }
 
         const opts = AddLeadRequest.constructFromObject(opt);
@@ -69,7 +68,7 @@ export class PipedriveLeadService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(errorMessage),
-                log: () => logger.error('An error occurred while adding the lead'),
+                log: () => logger.error('An error occurred while adding the lead', {error}),
             };
         }
     }

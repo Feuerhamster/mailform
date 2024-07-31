@@ -23,7 +23,7 @@ export class PipedriveOrganizationService {
 
         try {
             const response = await client.addOrganization(opts);
-            logger.info(`PipedriveService -> addOrganization -> received response: ${JSON.stringify(response)}`);
+            logger.info(`PipedriveService -> addOrganization`, {response});
 
             return response.success === true
                 ? {
@@ -53,7 +53,7 @@ export class PipedriveOrganizationService {
             const response = await client.getOrganizationField(ORG_LABEL_ID);
 
             if (response.success) {
-                logger.info(`checkLabelId -> getPersonField response: ${JSON.stringify(response)}`);
+                logger.info(`checkLabelId -> getPersonField response`, {response});
                 const labelField = response.data as Field<LabelField>;
                 const isValid = validateLabelIdField(labelField, ORG_LABEL_OPTION);
                 return {
@@ -111,7 +111,8 @@ export class PipedriveOrganizationService {
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
                 log: () =>
                     logger.error(
-                        'An error occurred while updating the organization label, specific add the Inbound Webform'
+                        'An error occurred while updating the organization label, specific add the Inbound Webform',
+                        {error}
                     ),
             };
         }

@@ -70,7 +70,7 @@ export class PipedrivePersonService {
             const newPerson = NewPerson.constructFromObject(opts);
 
             const response = await client.addPerson(newPerson);
-            logger.info(`PipedrivePersonService -> addPerson -> received response: ${JSON.stringify(response)}`);
+            logger.info(`PipedrivePersonService -> addPerson`, {response});
 
             if (response.success) {
                 const personData: PersonItem = response.data;
@@ -90,7 +90,7 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => logger.error('An error occurred while adding the person'),
+                log: () => logger.error('An error occurred while adding the person', {error}),
             };
         }
     }
@@ -149,7 +149,7 @@ export class PipedrivePersonService {
         try {
             const response = await client.getPersonField(LANGUAGE_FILED_ID);
             if (response.success) {
-                logger.info(`checkLanguage -> getPersonField response: ${JSON.stringify(response)}`);
+                logger.info(`checkLanguage -> getPersonField`, {response});
                 const langField = response.data as Field<LanguageOption>;
                 const isValid = this.validateLanguageField(langField);
                 return {
@@ -176,7 +176,7 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => logger.error('An error occurred while checking the language field'),
+                log: () => logger.error('An error occurred while checking the language field', {error}),
             };
         }
     }
@@ -207,7 +207,10 @@ export class PipedrivePersonService {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
                 log: () =>
-                    logger.error('An error occurred while updating the person label, specific add the Inbound webform'),
+                    logger.error(
+                        'An error occurred while updating the person label, specific add the Inbound webform',
+                        {error}
+                    ),
             };
         }
     }
@@ -217,7 +220,7 @@ export class PipedrivePersonService {
             const response = await client.getPersonField(PERSON_LABEL_FIELD_ID);
 
             if (response.success) {
-                logger.info(`checkLabelId -> getPersonField response: ${JSON.stringify(response)}`);
+                logger.info(`checkLabelId -> getPersonField`, {response});
                 const labelField = response.data as Field<LabelField>;
                 const isValid = validateLabelIdField(labelField, PERSON_LABEL_OPTION);
                 return {
@@ -243,7 +246,7 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => logger.error('An error occurred while checking the label id'),
+                log: () => logger.error('An error occurred while checking the label id', {error}),
             };
         }
     }
@@ -274,7 +277,7 @@ export class PipedrivePersonService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => logger.error('An error occurred while connecting organization with the person'),
+                log: () => logger.error('An error occurred while connecting organization with the person', {error}),
             };
         }
     }
