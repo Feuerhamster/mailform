@@ -17,7 +17,6 @@ import {PipedriveOrganizationService} from './pipedrive/organization';
 import {PipedrivePersonService} from './pipedrive/person';
 import {AddOrganization, AddPerson, Response} from './pipedrive/types';
 
-// TODO Test for logs
 export const PIPEDRIVE_INFO_ACC_ID = 13132618;
 
 const apiClient = new ApiClient();
@@ -26,7 +25,6 @@ const apiToken = apiClient.authentications.api_key;
 apiToken.apiKey = getRequiredEnvVariable('PIPEDRIVE_API_SECRET');
 
 export class PipedriveService {
-    // TODO use a constructor
     leadClient = new LeadsApi(apiClient);
     leadLabelClient = new LeadLabelsApi(apiClient);
     personClient = new PersonsApi(apiClient);
@@ -35,7 +33,6 @@ export class PipedriveService {
     orgFieldClient = new OrganizationFieldsApi(apiClient);
     personService = new PipedrivePersonService();
     notesClient = new NotesApi(apiClient);
-    // TODO implement the Notes Service
 
     validateContactForm(data: any): ContactForm {
         if (data.name === null) throw new Error('name is empty');
@@ -62,7 +59,7 @@ export class PipedriveService {
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(JSON.stringify(error)),
-                log: () => console.error('We have a Problem on add an new Person the howl process are broken.'),
+                log: () => logger.error('We have a Problem on add an new Person the howl process are broken.'),
             };
         }
 
@@ -96,7 +93,7 @@ export class PipedriveService {
             }
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            console.error(`[Error] connection between organization and person, error: ${ex.message}`);
+            logger.error(`[Error] connection between organization and person, error: ${ex.message}`);
         }
 
         try {
@@ -114,7 +111,7 @@ export class PipedriveService {
             leadId = (leadResp.data as any).id;
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            console.error(`[Error] add a lead, error: ${ex.message}`);
+            logger.error(`[Error] add a lead, error: ${ex.message}`);
         }
 
         // add Note
@@ -202,7 +199,7 @@ export class PipedriveService {
                 personResponse.log();
                 returnData.personLangFieldResponse?.log();
                 returnData.addLabelFiledResponse?.log();
-                console.warn(
+                logger.warn(
                     `We cant add the Language for the Person with ID: ${personId}, because: ${(error as Error).message}`
                 );
             }
@@ -221,7 +218,7 @@ export class PipedriveService {
                 personResponse.log();
                 returnData.personLabelFieldResponse?.log();
                 returnData.addLabelFiledResponse?.log();
-                console.warn(
+                logger.warn(
                     `We can't add the Inbound Form Label for Person with ID: ${personId}, because: ${
                         (error as Error).message
                     }`
@@ -231,17 +228,17 @@ export class PipedriveService {
             return {
                 success: true,
                 data: returnData,
-                log: () => console.info('Successfully added a new People'),
+                log: () => logger.info('Successfully added a new People'),
             };
         } catch (error) {
             // Error form addSimplePerson
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            // TODO write a test for the log statement
-            console.error(`[Error] add a new Person, error: ${ex.message}`);
+            // TODO Kevin #1 write a test for the log statement
+            logger.error(`[Error] add a new Person, error: ${ex.message}`);
             return {
                 success: false,
                 error: ex,
-                log: () => console.error('Error is happened on addPerson'),
+                log: () => logger.error('Error is happened on addPerson'),
             };
         }
     }
@@ -275,7 +272,7 @@ export class PipedriveService {
                 addSimpleOrgResp?.log();
                 returnData.orgLabelFieldResponse?.log();
                 returnData.addLabelFiledResponse?.log();
-                console.warn(
+                logger.warn(
                     `We can't add the Inbound Form Label for Org with ID: ${orgId}, because: ${
                         (error as Error).message
                     }`
@@ -289,7 +286,7 @@ export class PipedriveService {
             };
         } catch (error) {
             const ex = error instanceof Error ? error : new Error(JSON.stringify(error));
-            // TODO write a test for the log statement
+            // TODO Kevin #1 write a test for the log statement
             logger.error(`[Error] add a new Organization, error: ${ex.message}`);
             return {
                 success: false,
