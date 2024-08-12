@@ -25,10 +25,9 @@ if (process.env.ENABLE_PIPEDRIVE) {
 
     router.post('/pipe/contact-form', async (req: Request, res: Response) => {
         try {
-            // TODO activate this
-            // if (!(await RateLimiter.consume(pipedriveTarget, req.ip))) {
-            //     return res.status(429).end();
-            // }
+            if (!(await RateLimiter.consume(pipedriveTarget, req.ip))) {
+                return res.status(429).end();
+            }
 
             let referer = req.get('referer');
             if (referer) {
