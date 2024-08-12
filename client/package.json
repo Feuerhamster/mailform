@@ -29,6 +29,7 @@
 		"@types/js-cookie": "^3.0.6",
 		"axios": "^1.6.8",
 		"lucide-svelte": "^0.378.0",
+		"nanoid": "^5.0.7",
 		"sass": "^1.76.0"
 	}
 }

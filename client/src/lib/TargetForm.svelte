@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { createEventDispatcher } from "svelte";
 	import Button from "./Button.svelte";
-	import Input from "./Input.svelte";
-	import { ETargetStatus } from "./types";
+	import { ECaptchaProvider, ETargetStatus } from "./types";
+	import { nanoid } from "nanoid";
+
+	const dispatch = createEventDispatcher<{submit: typeof data}>();
 
 	const data = {
 		name: "",
@@ -9,16 +12,16 @@
 		recipients: [""],
 		from: "",
 		status: ETargetStatus.ENABLED,
-		origin: "",
-		api_key: "",
-		allow_files: false,
-		allow_templates: false,
-		allow_custom_recipients: false,
-		subject_prefix: "",
-		ratelimit_timespan: 0,
-		ratelimit_requests: 0,
-		success_redirect: "",
-		error_redirect: "",
+		origin: undefined,
+		api_key: undefined,
+		allow_files: undefined,
+		allow_templates: undefined,
+		allow_custom_recipients: undefined,
+		subject_prefix: undefined,
+		ratelimit_timespan: undefined,
+		ratelimit_requests: undefined,
+		success_redirect: undefined,
+		error_redirect: undefined,
 		captcha_provider: undefined,
 		captcha_secret: undefined
 	}
@@ -35,28 +38,41 @@
 			data.recipients = data.recipients;
 		}
 	}
+
+	function submit() {
+		// remove empty elements
+		data.recipients = data.recipients.filter(r => r);
+
+		dispatch("submit", data);
+	}
+
+	function generateKey() {
+		data.api_key = nanoid(32) as any;
+	}
 </script>
 
-<form>
+<form on:submit|preventDefault={submit}>
 	<label>
 		Display name
-		<input placeholder="name" />
+		<input placeholder="name" required bind:value={data.name} />
 	</label>
 
 	<label>
 		SMTP Url
-		<input placeholder="smtp" />
+		<input placeholder="smtp" required bind:value={data.smtp} />
 	</label>
 
 	<label>
 		From (sender e-mail address)
-		<input placeholder="from email" />
+		<input placeholder="from email" required bind:value={data.from} />
 	</label>
 
 	<label>
 		Subject prefix
-		<input placeholder="prefix" />
+		<input placeholder="prefix" bind:value={data.subject_prefix} />
 	</label>
+
+	<hr />
 
 	<fieldset>
 		<legend>Recipients</legend>
@@ -69,73 +85,102 @@
 		{/each}
 	</fieldset>
 
+	<hr />
+
 	<fieldset>
 		<legend>Permissions</legend>
 
 		<label class="inline">
 			Allow file attatchments
-			<input type="checkbox" />
+			<input type="checkbox" bind:checked={data.allow_files} />
 		</label>
 
 		<label class="inline">
 			Allow template usage
-			<input type="checkbox" />
+			<input type="checkbox" bind:checked={data.allow_templates} />
 		</label>
 
 		<label class="inline">
 			Allow custom recipients from target execution
-			<input type="checkbox" />
+			<input type="checkbox" bind:value={data.allow_custom_recipients} />
 		</label>
 	</fieldset>
+
+	<hr />
+
+	<fieldset>
+		<legend>Access restrictions</legend>
+
+		<label>
+			Origin
+			<input type="Origin URL" bind:value={data.origin} />
+		</label>
+
+		
+		<label>
+			API Key
+			<input type="Custom api key" bind:value={data.api_key} />
+		</label>
+
+		<Button type="button" on:click={generateKey}>Generate API Key</Button>
+	</fieldset>
+
+	<hr />
 
 	<fieldset>
 		<legend>Rate Limits</legend>
 
 		<label>
 			Timespan
-			<input type="number" />
+			<input type="number" bind:value={data.ratelimit_timespan} />
 		</label>
 
 		<label>
 			Max number of request allowed in timespan
-			<input type="number" />
+			<input type="number" bind:value={data.ratelimit_requests} />
 		</label>
 	</fieldset>
+
+	<hr />
 
 	<fieldset>
 		<legend>Redirects</legend>
 
 		<label>
 			Success redirect
-			<input type="URL" />
+			<input type="URL" bind:value={data.success_redirect} />
 		</label>
 
 		
 		<label>
 			Error redirect
-			<input type="URL" />
+			<input type="URL" bind:value={data.error_redirect} />
 		</label>
 	</fieldset>
+
+	<hr />
 
 	<fieldset>
 		<legend>Captcha</legend>
 
 		<label>
 			Provider
-			<select>
-				<option disabled selected>Select provider</option>
-				<option>Google ReCaptcha</option>
-				<option>hCaptcha</option>
+			<select bind:value={data.captcha_provider}>
+				<option disabled selected value={null}>Select provider</option>
+				<option value={ECaptchaProvider.RECAPTCHA}>Google ReCaptcha</option>
+				<option value={ECaptchaProvider.HCAPTCHA}>hCaptcha</option>
 			</select>
 		</label>
 
 		<label>
 			Secret
-			<input type="text" />
+			<input type="text" bind:value={data.captcha_secret} />
 		</label>
 	</fieldset>
 
-	<Button>Create</Button>
+	<br />
+
+	<Button type="submit">Create</Button>
 </form>
 
 <style lang="scss">
@@ -148,10 +193,26 @@
 		flex-direction: column;
 		gap: 1rem;
 
+		hr {
+			margin: 0;
+			border: 0;
+			border-bottom: 2px solid var(--color-block-accent);
+		}
+
 		fieldset {
 			display: flex;
 			flex-direction: column;
 			gap: 1rem;
+			margin: 0;
+			border: 0;
+			padding: 0;
+
+			legend {
+				font-weight: bold;
+				font-size: 1.2rem;
+				margin-bottom: 0.4rem;
+				padding: 0;
+			}
 		}
 	}
 </style>

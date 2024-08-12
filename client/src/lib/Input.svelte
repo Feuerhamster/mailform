@@ -10,7 +10,7 @@
 		color: inherit;
 		border-radius: 8px;
 		border: 2px solid transparent;
-		padding: 8px 14px;
+		padding: 0.6rem 0.8rem;
 		background-color: var(--color-block-accent);
 
 		transition: border 0.2s;

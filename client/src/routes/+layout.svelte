@@ -12,9 +12,11 @@
 <main>
 	{#if $authorizationKey}
 		<Sidebar />
-		<section>
-			<slot />
-		</section>
+		<div class="responsive-wrapper">
+			<section>
+				<slot />
+			</section>
+		</div>
 	{:else}
 		<section class="center">
 			<Login></Login>
@@ -59,6 +61,16 @@
 		&.center {
 			align-items: center;
 			justify-content: center;
+		}
+	}
+
+	div.responsive-wrapper {
+		display: flex;
+		flex: 1;
+		justify-content: center;
+
+		section {
+			max-width: 840px;
 		}
 	}
 </style>
