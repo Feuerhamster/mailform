@@ -38,7 +38,7 @@ docker run Feuerhamster/mailform
 ```
 
 ### Manually
-*Requires NodeJS 14 or higher*
+*Requires NodeJS 16 or higher*
 
 ```shell
 git clone https://github.com/Feuerhamster/mailform.git

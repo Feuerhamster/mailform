@@ -1,5 +1,6 @@
 import {NextFunction, Request, Response, Router} from "express";
 import formidable from "formidable";
+import { firstValues } from 'formidable/src/helpers/firstValues.js';
 import {TargetManager} from "./services/targetManager";
 import {Target} from "./@types/target";
 import {RateLimiter} from "./services/rateLimiter";
@@ -63,11 +64,12 @@ router.post("/:target", async (req: Request, res: Response) => {
 
     // parse form
     const form = formidable({});
-    form.parse(req, async (err, fields, files) => {
+    form.parse(req, async (err, fieldsMultiple, files) => {
         if (err) {
             if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
             return res.status(500).send({ message: "Parse Error" }).end();
         } else {
+            const fields = firstValues(form, fieldsMultiple, []);
             const validationResult = validate(fields, postBody);
 
             // validate fields
@@ -113,6 +115,6 @@ router.post("/:target", async (req: Request, res: Response) => {
     });
 });
 
-router.all("*", (req: Request, res: Response) => res.status(404).end());
+router.all('/{*splat}', (req: Request, res: Response) => res.status(404).end());
 
 export default router;
