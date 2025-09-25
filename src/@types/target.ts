@@ -1,31 +1,32 @@
 export interface Target {
-    smtp: string;
-    origin: string;
-    recipients: string[];
-    from?: string;
-    subjectPrefix?: string;
-    redirect?: Redirects;
-    key?: string;
-    rateLimit?: TargetRateLimit;
-    captcha?: TargetCaptchaOptions
+  smtp: string;
+  origin: string;
+  recipients: string[];
+  replyTo?: string;
+  from: string;
+  subjectPrefix?: string;
+  redirect?: Redirects;
+  key?: string;
+  rateLimit?: TargetRateLimit;
+  captcha?: TargetCaptchaOptions;
 }
 
 export interface Redirects {
-    success?: string;
-    error?: string
+  success?: string;
+  error?: string;
 }
 
 export interface TargetRateLimit {
-    timespan: number;
-    requests: number;
+  timespan: number;
+  requests: number;
 }
 
 export interface TargetCaptchaOptions {
-    provider: CaptchaProvider;
-    secret: string;
+  provider: CaptchaProvider;
+  secret: string;
 }
 
 export enum CaptchaProvider {
-    RECAPTCHA = "recaptcha",
-    HCAPTCHA = "hcaptcha"
+  RECAPTCHA = "recaptcha",
+  HCAPTCHA = "hcaptcha",
 }
