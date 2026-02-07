@@ -64,55 +64,54 @@ router.post("/:target", async (req: Request, res: Response) => {
 
     // parse form
     const form = formidable({});
-    form.parse(req, async (err, fieldsMultiple, files) => {
-        if (err) {
-            if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
-            return res.status(500).send({ message: "Parse Error" }).end();
-        } else {
-            const fields = firstValues(form, fieldsMultiple, []);
-            const validationResult = validate(fields, postBody);
+    try {
+        const [fieldsMultiple, files] = await form.parse(req);
+        const fields = firstValues(form, fieldsMultiple, []);
+        const validationResult = validate(fields, postBody);
 
-            // validate fields
-            if(validationResult.error) {
-                return res.status(422).json(validationResult);
-            }
-
-            // Check captcha
-            if(target.captcha) {
-                let userCaptchaResponse = fields["g-recaptcha-response"] || fields["h-captcha-response"] || null;
-                userCaptchaResponse = userCaptchaResponse instanceof Array ? userCaptchaResponse[0] : userCaptchaResponse
-                let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
-
-                if(!verified) {
-                    if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
-                    return res.status(400).send({ message: "captcha verification failed" }).end();
-                }
-            }
-
-            // extract fields
-            const fieldFrom = fields["from"] instanceof Array ? fields["from"][0] : fields["from"]
-            const fieldFirstName = fields["firstName"] instanceof Array ? fields["firstName"][0] : fields["firstName"]
-            const fieldLastName = fields["lastName"] instanceof Array ? fields["lastName"][0] : fields["lastName"]
-            const fieldSubjectPrefix = fields["subjectPrefix"] instanceof Array ? fields["subjectPrefix"][0] : fields["subjectPrefix"] ?? ""
-            const subject = (target.subjectPrefix ?? "") + fieldSubjectPrefix + (fields["subject"] instanceof Array ? fields["subject"][0] : fields["subject"])
-            const fieldBody = fields["body"] instanceof Array ? fields["body"][0] : fields["body"]
-
-            // send email
-            let from = EmailService.formatFromField(fieldFrom ?? target.from, fieldFirstName, fieldLastName);
-            let sent = await EmailService.sendMail(req.params.target, from, subject, fieldBody, files);
-
-            if(sent instanceof Error || !sent) {
-                if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
-                return res.status(500).send({ message: (<Error>sent).message }).end();
-            }
-
-            if(target.redirect?.success) {
-                return res.redirect(getRedirectUrl(req, target.redirect.success));
-            }
-
-            return res.status(200).end();
+        // validate fields
+        if(validationResult.error) {
+            return res.status(422).json(validationResult);
         }
-    });
+
+        // Check captcha
+        if(target.captcha) {
+            let userCaptchaResponse = fields["g-recaptcha-response"] || fields["h-captcha-response"] || null;
+            userCaptchaResponse = userCaptchaResponse instanceof Array ? userCaptchaResponse[0] : userCaptchaResponse
+            let verified = await CaptchaService.verifyCaptcha(target.captcha, userCaptchaResponse);
+
+            if(!verified) {
+                if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
+                return res.status(400).send({ message: "captcha verification failed" }).end();
+            }
+        }
+
+        // extract fields
+        const fieldFrom = fields["from"] instanceof Array ? fields["from"][0] : fields["from"]
+        const fieldFirstName = fields["firstName"] instanceof Array ? fields["firstName"][0] : fields["firstName"]
+        const fieldLastName = fields["lastName"] instanceof Array ? fields["lastName"][0] : fields["lastName"]
+        const fieldSubjectPrefix = fields["subjectPrefix"] instanceof Array ? fields["subjectPrefix"][0] : fields["subjectPrefix"] ?? ""
+        const subject = (target.subjectPrefix ?? "") + fieldSubjectPrefix + (fields["subject"] instanceof Array ? fields["subject"][0] : fields["subject"])
+        const fieldBody = fields["body"] instanceof Array ? fields["body"][0] : fields["body"]
+
+        // send email
+        let from = EmailService.formatFromField(fieldFrom ?? target.from, fieldFirstName, fieldLastName);
+        let sent = await EmailService.sendMail(req.params.target, from, subject, fieldBody, files);
+
+        if(sent instanceof Error || !sent) {
+            if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
+            return res.status(500).send({ message: (<Error>sent).message }).end();
+        }
+
+        if(target.redirect?.success) {
+            return res.redirect(getRedirectUrl(req, target.redirect.success));
+        }
+
+        return res.status(200).end();
+    } catch (err) {
+        if(target.redirect?.error) return res.redirect(getRedirectUrl(req, target.redirect.error));
+        return res.status(500).send({ message: "Parse Error" }).end();
+    }
 });
 
 router.all('/{*splat}', (req: Request, res: Response) => res.status(404).end());
